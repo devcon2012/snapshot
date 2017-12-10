@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<configuration>
+    <files>
+    </files>
+    <global>
+        <exit-on>
+        </exit-on>
+        <minimize>appstart</minimize>
+        <local-cache>never</local-cache>        
+    </global>
+    
+    <connections>
+        <connection type="ssh" autostart="on" autodelete="off">
+	    <integer16>4711</integer16>
+	    <integer16>-4712</integer16>
+	    <uinteger16>65000</uinteger16>
+	    <integer32>80000</integer32>
+            <boolean/>
+            <string>&lt; Ümlaut ß  base64 sind 256 bytes 0-255</string>
+            <fingerprint format="hex">b3:7f:b4:38:76:d3:37:3b</fingerprint>
+            <content format="base64">AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygp
+		KissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFi
+		Y2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbn
+		J2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1db
+		X2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==</content>
+	</connection>
+    </connections>
+</configuration>
