@@ -24,7 +24,7 @@ include(ProjectIncludes)
 
 #add_definitions( -m32)
 set(C_STD "")
-set(CPP_STD "--std=c++11")
+set(CPP_STD "--std=c++14")
 add_definitions(${CPP_STD})
 
 set(REQUIRED_MODULES OpenSSL z)
@@ -42,12 +42,10 @@ endif()
 LOCATE_MODULES(REQUIRED ${REQUIRED_MODULES})
 LOCATE_MODULES(OPTIONAL ${OPTIONAL_MODULES})
 
-
-
 add_subdirectory(src)
 
 if(WITH_TESTS)
-    enable_testing()
+  enable_testing()
   add_subdirectory(test)
 endif()
 
