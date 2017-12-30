@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   DefaultObject.hpp
  * Author: klaus
@@ -14,25 +8,34 @@
 #ifndef DEFAULTOBJECT_HPP
 #define DEFAULTOBJECT_HPP
 
+#include <cstdlib>
+
 /// DefaultObjects are improved Singletons
-class DefaultObject {
+template<class T> class DefaultObject {
 public:
-    DefaultObject();
-    DefaultObject(const DefaultObject& orig);
-    virtual ~DefaultObject();
+    DefaultObject() 
+        {
+        if(!ms_DefaultObject)
+                ms_DefaultObject = dynamic_cast<T *>(this) ;
+        }
+    
+    virtual ~DefaultObject()
+        {
+        if( ms_DefaultObject == dynamic_cast<T *>(this) )
+                ms_DefaultObject = NULL;
+        }
         
     /// Get the default Object
-    static DefaultObject * GetDefault() 
+    static T * GetDefault() 
         { return ms_DefaultObject;}
     
     /// Set the default Object
-    static void SetDefault( DefaultObject * pDefault) 
+    static void SetDefault( T * pDefault) 
         {ms_DefaultObject = pDefault; }
     
 private:
 
-    static DefaultObject * ms_DefaultObject ;
+    static T * ms_DefaultObject ;
 };
-
 #endif /* DEFAULTOBJECT_HPP */
 

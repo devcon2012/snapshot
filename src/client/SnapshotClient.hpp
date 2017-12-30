@@ -14,16 +14,25 @@
 #ifndef SNAPSHOTCLIENT_HPP
 #define SNAPSHOTCLIENT_HPP
 
-class SnapshotClient 
+#include <wx/wx.h>
+
+#include "SnapshotView.hpp"
+#include "SnapshotData.hpp"
+
+
+class SnapshotClient : public wxApp
     {
 public:
+    SnapshotClient() ;
     SnapshotClient(int argc, char** argv ) ;
     SnapshotClient(const SnapshotClient& orig) ;
     virtual ~SnapshotClient() ;
     int Run() ;
+    virtual bool OnInit();
     
 private:
-
+     
+    SnapshotView * m_pView ;
     };
 
 #endif /* SNAPSHOTCLIENT_HPP */

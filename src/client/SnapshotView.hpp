@@ -14,12 +14,21 @@
 #ifndef SNAPSHOTVIEW_HPP
 #define SNAPSHOTVIEW_HPP
 
-class SnapshotView {
+#include "wxClient.h"
+
+class SnapshotView : public myMainFrame
+{
 public:
-    SnapshotView();
+    SnapshotView(int argc, char** argv);
     SnapshotView(const SnapshotView& orig);
     virtual ~SnapshotView();
+    
+
 private:
+    virtual void ExitButton( wxCommandEvent& event ) { OnExit(event); }
+    virtual bool OnInit() ;
+    virtual void OnExit(wxCommandEvent &e) ;
+    wxDECLARE_EVENT_TABLE();
 
 };
 

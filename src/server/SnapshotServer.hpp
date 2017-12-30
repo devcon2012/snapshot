@@ -14,14 +14,53 @@
 #ifndef SNAPSHOTSERVER_HPP
 #define SNAPSHOTSERVER_HPP
 
+#include <string>
+#include <map>
+
+#define BOOST_SPIRIT_THREADSAFE
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+
+#include "http/server_http.hpp"
+using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
+
+class SnapshotServerModel;
+
 class SnapshotServer {
 public:
     SnapshotServer(int argc, char** argv);
     SnapshotServer(const SnapshotServer& orig);
     virtual ~SnapshotServer();
-    int Run();
-private:
 
+    /// Control - query snapshots, prepare UL/DL
+    std::string Control(std::shared_ptr<HttpServer::Request> &request);
+
+    /// Upload - upload a file snapshot
+    std::string Upload(std::shared_ptr<HttpServer::Request> &request);
+
+    /// Download -- download a saved file
+    std::string Download(std::shared_ptr<HttpServer::Request> &request);
+
+    boost::property_tree::ptree Action(boost::property_tree::ptree &pt);
+    boost::property_tree::ptree Enumerate(boost::property_tree::ptree &pt);
+    boost::property_tree::ptree Getter(boost::property_tree::ptree &pt);
+    boost::property_tree::ptree Setter(boost::property_tree::ptree &pt);
+    boost::property_tree::ptree Adder(boost::property_tree::ptree &pt);
+    boost::property_tree::ptree Deleter(boost::property_tree::ptree &pt);
+    
+    /// Logging
+    void log(std::shared_ptr<HttpServer::Request> const &request, SimpleWeb::error_code const &e);
+    void log(std::shared_ptr<HttpServer::Request> const &request);
+    void log(std::shared_ptr<HttpServer::Response> const &response);
+    void log(std::shared_ptr<HttpServer::Response> const &response, SimpleWeb::error_code const &e);
+    void log(const std::exception &e);
+
+    /// map file extensions to mime type (utility function)
+    std::string ext2mime(std::string const &s);
+
+private:
+    std::map<std::string, std::string>      m_sMimeMap;
+    SnapshotServerModel                   * m_pModel ;
 };
 
 #endif /* SNAPSHOTSERVER_HPP */

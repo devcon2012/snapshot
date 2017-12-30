@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Snapshot Server</title>
+        <meta charset="UTF-8">
+        <script src="js/jquery.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/snapshot.css">
+<script>
+    var ctrl = {action: 'enumerate', arg: 'snapshots'};
+    
+$(document).ready(function(){
+    $("button").click(function(){
+        $.ajax({
+            url:            'json',
+            type:           'post',
+            mimeType:       'application/json',
+            data:           JSON.stringify(ctrl),        
+            dataType:       'json',
+            headers:        {'Content-Type' : 'application/json'},
+            success: function(data,status){
+                            $("#display").html(JSON.stringify(data));
+                            //alert("Data: " + data + "\nStatus: " + status);
+                        },
+            error: function(xhr, desc, err){
+                            console.log(xhr);
+                            console.log("Desc:"+desc+" Err:"+err);
+                        }
+            })
+    });
+});
+</script>        
+    </head>
+    <body>
+            <textarea id="display" name="display" rows="25" cols="80"></textarea>
+            <br>
+            <button type=submit title="OK" >OK</button>
+    </body>
+</html>

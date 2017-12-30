@@ -65,10 +65,7 @@ std::string I18N::I18N_interpolate(const char *sType,
 
  I18N * I18N::GetDefaultI18N() 
     {
-    I18N *pDefault =  dynamic_cast<I18N*> (DefaultObject::GetDefault()) ;
-
-    if ( ! pDefault )
-        pDefault = new I18N("de") ;
-    
-    return pDefault ;
+    return ( GetDefault() ? GetDefault() : new I18N("de")) ;
     }
+
+template<> I18N * DefaultObject<I18N>::ms_DefaultObject = NULL ;

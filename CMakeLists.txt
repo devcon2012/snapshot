@@ -9,11 +9,14 @@
 #       -DWITH_TESTS    build tests, too
 #       
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8) 
 
 set(PRJNAME DEMO)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/script/cmake)
+set(KYOTOCABINET_ROOT "/home/klaus/lib/kyotocabinet-1.2.76")
+
+set(WITH_TESTS On)
 
 # Include cmake modules
 if ( NOT ARCH )
@@ -25,7 +28,8 @@ include(ProjectIncludes)
 #add_definitions( -m32)
 set(C_STD "")
 set(CPP_STD "--std=c++14")
-add_definitions(${CPP_STD})
+set(CMAKE_CXX_COMPILER "g++-7")
+add_definitions(${CPP_STD} -fabi-version=2 -g3 -Wall )
 
 set(REQUIRED_MODULES OpenSSL z)
 set(OPTIONAL_MODULES WX APR)

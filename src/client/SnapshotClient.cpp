@@ -13,6 +13,13 @@
  */
 
 #include "SnapshotClient.hpp"
+#include <wx/wx.h>
+
+wxIMPLEMENT_APP(SnapshotClient);
+
+SnapshotClient::SnapshotClient()
+    {
+    }
 
 SnapshotClient::SnapshotClient(int argc, char** argv)
     {
@@ -30,4 +37,11 @@ SnapshotClient::~SnapshotClient()
 int SnapshotClient::Run()
     {
     
+    }
+
+bool SnapshotClient::OnInit()
+    {
+    m_pView = new SnapshotView(0, NULL ) ; 
+    m_pView -> Show(true);
+    return true;
     }

@@ -12,12 +12,18 @@
  */
 
 #include "SnapshotView.hpp"
+#include <wx/wx.h>
 
-SnapshotView::SnapshotView()
+wxBEGIN_EVENT_TABLE(SnapshotView, wxFrame)
+    EVT_MENU(wxID_EXIT,  SnapshotView::OnExit)
+wxEND_EVENT_TABLE()
+
+SnapshotView::SnapshotView(int argc, char** argv ) : myMainFrame(NULL)
     {
+    
     }
 
-SnapshotView::SnapshotView(const SnapshotView& orig)
+SnapshotView::SnapshotView(const SnapshotView& orig) : myMainFrame(NULL)
     {
     }
 
@@ -25,3 +31,12 @@ SnapshotView::~SnapshotView()
     {
     }
 
+bool SnapshotView::OnInit()
+    {
+    this->Show(true);
+    }
+
+void SnapshotView::OnExit(wxCommandEvent &e) 
+    {
+    exit(0);
+    }

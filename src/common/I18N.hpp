@@ -19,7 +19,7 @@
 
 #include "DefaultObject.hpp"
 
-class I18N : public DefaultObject
+class I18N : public DefaultObject<I18N>
     {
 public:
     I18N(const char * sLang) ;
