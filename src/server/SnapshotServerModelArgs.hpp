@@ -17,7 +17,32 @@
 static std::string sRequiredArgs = 
         "{"
             "\"SetClientHandle\": "
-                "{\"subject\" : \"string\" },"
+                "{\"subject\" :         \"string\" },"
+            "\"GetClientHandle\": "
+                "{\"subject\" :         \"string\" },"
+
+            "\"GetSnapshots\": "
+                "{\"clienthandle\" :    \"handle\" },"
+            "\"GetSnapshotPathes\": "
+                "{\"clienthandle\" :    \"handle\" ,"
+                " \"snapshothandle\" :  \"handle\" },"
+            "\"GetSnapshotFiles\": "
+                "{\"clienthandle\" :    \"handle\" ,"
+                " \"snapshothandle\" :  \"handle\" },"
+
+            "\"AddSnapshot\": "
+                "{\"clienthandle\" :    \"handle\" ,"
+                " \"timestamp\" :       \"integer\" },"
+            "\"AddSnapshotPath\": "
+                "{\"clienthandle\" :    \"handle\" ,"
+                " \"snapshothandle\" :  \"handle\" ,"
+                " \"path\" :            \"string\" },"
+            "\"AddSnapshotFiles\": "
+                "{\"clienthandle\" :    \"handle\" ,"
+                " \"snapshothandle\" :  \"handle\" ,"
+                " \"pathhandle\" :      \"handle\" ,"
+                " \"files\" :           \"array\" }"
+
         "}" ;
 ;
 

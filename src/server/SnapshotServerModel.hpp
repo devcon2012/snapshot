@@ -25,7 +25,13 @@ public:
     SnapshotServerModel(const SnapshotServerModel& orig);
     virtual ~SnapshotServerModel();
     
-      // Getter
+    /// The Model must be provisioned before being used
+    virtual void Provision(boost::property_tree::ptree &pt) {}
+    
+    /// Release resources etc.
+    virtual void Cleanup() {}
+    
+    // Getter
     // Get a handle for a client
     virtual boost::property_tree::ptree GetClientHandle(boost::property_tree::ptree &pt) = 0;
     
@@ -52,24 +58,32 @@ public:
     // Add a list of files in one path to a snapshot
     virtual boost::property_tree::ptree AddSnapshotFiles(boost::property_tree::ptree &pt) = 0;
     
-    virtual std::string create_handle() ;
+    virtual std::string create_handle(const char * prefix=NULL) ;
+    virtual std::string change_handle(const char *handle, const char * old_prefix, const char * new_prefix) ;
     
-    virtual boost::property_tree::ptree pt_from_json(std::string sJSON) ;
-
+    virtual std::string str2json(const char * str) ;
+    virtual boost::property_tree::ptree pt_from_json(std::string const &sJSON) ;
+    virtual std::string json_from_pt(boost::property_tree::ptree const &pt)  ;
+ 
     
   protected:
 
     virtual void build_required_args();
-    virtual boost::property_tree::ptree required_args(const std::string &sFunction);
 
-    virtual bool has_required_args(boost::property_tree::ptree &pt, 
-                           boost::property_tree::ptree const & required);
+    virtual bool has_required_args(boost::property_tree::ptree &args_in, 
+                           const std::string &sFunction);
 
-    virtual void return_error_info(boost::property_tree::ptree &pt, 
-                        std::string &sType,
-                        std::string &sInfo);
+    virtual boost::property_tree::ptree return_error_info(boost::property_tree::ptree &pt, 
+                        const std::string &sType,
+                        const std::string &sLocation,
+                        const std::string &sInfo=""
+                        );
 
     virtual void add_vector(boost::property_tree::ptree &pt,
+                        std::string &sArrayName,
+                        std::vector<std::string> &sArray);
+    
+    virtual void get_vector(boost::property_tree::ptree &pt,
                         std::string &sArrayName,
                         std::vector<std::string> &sArray);
     

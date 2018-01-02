@@ -12,20 +12,20 @@
 using namespace std ;
 using namespace kyotocabinet ;
 
+/// Handle types:
+/// 01- Client handle
+/// 02- Snapshot-handle
+
+#define CLIENT_HANDLE_PREFIX "01-"
+#define SNAPSHOT_HANDLE_PREFIX "02-"
+#define PATH_HANDLE_PREFIX "03-"
+#define FILE_HANDLE_PREFIX "03-"
+
 SnapshotServerModelKC::SnapshotServerModelKC()
-    {
-        
+    {  
+    m_pDBClients    = NULL ;
     m_pDBSnapshots  = NULL ;
-    m_pDBFiles      = NULL ;
-    
-    m_sDBClientFilename     = m_sDBRoot + "/clients.kch" ;
-    
-    m_pDBClients = new PolyDB();
-    if (! (m_pDBClients && m_pDBClients -> open(m_sDBClientFilename, PolyDB::OWRITER | PolyDB::OCREATE)) )
-        {
-        throw SnapshotException("cannot_open", m_sDBClientFilename.c_str()) ;
-        }
-    
+    m_pDBFiles      = NULL ;    
     }
 
 SnapshotServerModelKC::SnapshotServerModelKC(const SnapshotServerModelKC& orig)
@@ -33,6 +33,12 @@ SnapshotServerModelKC::SnapshotServerModelKC(const SnapshotServerModelKC& orig)
     }
 
 SnapshotServerModelKC::~SnapshotServerModelKC()
+    {
+    }
+
+/// close databases, release memory. 
+/// object can be re-used after provisioning again
+ void SnapshotServerModelKC::Cleanup() 
     {
     if(m_pDBClients)
         {
@@ -53,8 +59,45 @@ SnapshotServerModelKC::~SnapshotServerModelKC()
         m_pDBFiles = NULL ;
         } 
     }
+ 
+/// Provision the model with the configuration data required.
+/// The Model will not work without this info
+/// @var pt --> "DBRoot" : Database root path
+ void SnapshotServerModelKC::Provision(boost::property_tree::ptree &pt) 
+    {
+     
+    // Call super method
+    SnapshotServerModel::Provision(pt) ;
+    
+    m_sDBRoot = pt.get("DBRoot", ".") ;
+    
+    m_sDBClientFilename     = m_sDBRoot + "/clients.kch" ;
 
+    m_pDBClients = new PolyDB();
+    if (! (m_pDBClients && m_pDBClients -> open(m_sDBClientFilename, PolyDB::OWRITER | PolyDB::OCREATE)) )
+        {
+        throw SnapshotException("cannot_open", m_sDBClientFilename.c_str()) ;
+        }
+    
+    
+    m_sDBSnapshotFilename     = m_sDBRoot + "/snapshots.kch" ;
 
+    m_pDBSnapshots = new PolyDB();
+    if (! (m_pDBSnapshots && m_pDBSnapshots -> open(m_sDBSnapshotFilename, PolyDB::OWRITER | PolyDB::OCREATE)) )
+        {
+        throw SnapshotException("cannot_open", m_sDBSnapshotFilename.c_str()) ;
+        }
+
+    
+    m_sDBFilesFilename     = m_sDBRoot + "/files.kch" ;
+
+    m_pDBFiles = new PolyDB();
+    if (! (m_pDBFiles && m_pDBFiles -> open(m_sDBFilesFilename, PolyDB::OWRITER | PolyDB::OCREATE)) )
+        {
+        throw SnapshotException("cannot_open", m_sDBFilesFilename.c_str()) ;
+        }
+
+     }
 
 /// Get a handle for a client
 /// pt contains the certificate subject, this is mapped to a unique handle
@@ -62,8 +105,20 @@ SnapshotServerModelKC::~SnapshotServerModelKC()
 boost::property_tree::ptree SnapshotServerModelKC::GetClientHandle(boost::property_tree::ptree &pt)
     {
     boost::property_tree::ptree ret;
-    return ret;
     
+    if ( ! has_required_args(pt, "GetClientHandle") )
+        return return_error_info(pt, "bad_arguments", "GetClientHandle");
+    
+    std::string sSubject = pt.get<std::string>("subject") ;
+
+    std::string sHandle ;
+    if ( ! m_pDBClients -> get (sSubject, &sHandle) )
+        {
+        return return_error_info(pt, "nonexisting_handle", "GetClientHandle");
+        }
+    
+    ret.put("clienthandle", sHandle);
+    return ret;
     }
 
 /// Get a list of Snaphots we have
@@ -72,6 +127,12 @@ boost::property_tree::ptree SnapshotServerModelKC::GetClientHandle(boost::proper
 boost::property_tree::ptree SnapshotServerModelKC::GetSnapshots(boost::property_tree::ptree &pt)
     {
     boost::property_tree::ptree ret;
+
+    if ( ! has_required_args(pt, "GetSnapshots") )
+        return return_error_info(pt, "bad_arguments", "GetSnapshots");
+    
+    std::string sSubject = pt.get<std::string>("clienthandle") ;
+    
     return ret;
     
     }
@@ -102,11 +163,27 @@ boost::property_tree::ptree SnapshotServerModelKC::GetSnapshotFiles(boost::prope
 /// Set a handle for a client
 /// pt contains the certificate subject, this is mapped to a unique handle
 /// returned in the ptree
+/// @var pt requires subject
+/// @ret ret pt containing handle 
+
 boost::property_tree::ptree SnapshotServerModelKC::SetClientHandle(boost::property_tree::ptree &pt)
     {
     boost::property_tree::ptree ret;
     
-    if ( ! has_required_args(pt, required_args("SetClientHandle")) )
+    if ( ! has_required_args(pt, "SetClientHandle") )
+        return return_error_info(pt, "bad_arguments", "SetClientHandle");
+    
+    std::string sSubject = pt.get<std::string>("subject") ;
+
+    std::string sHandle ;
+    if ( ! m_pDBClients -> get (sSubject, &sHandle) )
+        {
+        sHandle = create_handle(CLIENT_HANDLE_PREFIX) ;
+        m_pDBClients -> set (sSubject, sHandle) ;
+        //return return_error_info(pt, "database_fail", "SetClientHandle");
+        }
+    
+    ret.put("clienthandle", sHandle);
     return ret;
     }
 
@@ -115,10 +192,27 @@ boost::property_tree::ptree SnapshotServerModelKC::SetClientHandle(boost::proper
 /// (if given) will copy the pathes for this old snapshot to the new one
 /// returned is a newly created unique snapshot handle for this client
 /// and timestamp
+/// @var pt argument ptree containing clienthandle and timestamp
+/// @ret 
 boost::property_tree::ptree SnapshotServerModelKC::AddSnapshot(boost::property_tree::ptree &pt)
     {
-    boost::property_tree::ptree ret;
-    return ret;
+
+    if ( ! has_required_args(pt, "AddSnapshot") )
+        return return_error_info(pt, "bad_arguments", "AddSnapshot");
+
+    std::string sClienthandle = pt.get<std::string>("clienthandle") ;
+    std::string sTimestamp = pt.get<std::string>("timestamp") ;
+    std::string sSnapshothandle = create_handle(SNAPSHOT_HANDLE_PREFIX);
+    
+    boost::property_tree::ptree snapshot;
+    snapshot.add("timestamp", sTimestamp);
+    snapshot.add("snapshothandle", sSnapshothandle);
+    
+    std::string sJSON = json_from_pt(snapshot) ;
+
+    m_pDBSnapshots -> set (sClienthandle, sJSON) ;
+
+    return snapshot;
     
     }
 
@@ -127,9 +221,32 @@ boost::property_tree::ptree SnapshotServerModelKC::AddSnapshot(boost::property_t
 /// returned is a new unique handle for this path
 boost::property_tree::ptree SnapshotServerModelKC::AddSnapshotPath(boost::property_tree::ptree &pt)
     {
-    boost::property_tree::ptree ret;
-    return ret;
+    if ( ! has_required_args(pt, "AddSnapshotPath") )
+        return return_error_info(pt, "bad_arguments", "AddSnapshotPath");
+
+    std::string sSnapshothandle   = pt.get<std::string>("snapshothandle") ;
+    std::string sSnapshotPath     = pt.get<std::string>("path") ;
+    std::string sPathhandle       = change_handle(sSnapshothandle.c_str(), SNAPSHOT_HANDLE_PREFIX, PATH_HANDLE_PREFIX);
     
+    std::string sJSON ;
+    boost::property_tree::ptree snapshot;
+    
+    if( m_pDBSnapshots -> get (sPathhandle, & sJSON))
+        {
+        snapshot = pt_from_json(sJSON) ;
+        }
+
+    snapshot.put("snapshothandle", sSnapshothandle);
+    
+    sJSON = json_from_pt(snapshot) ;
+    
+    if( m_pDBSnapshots -> set (sPathhandle, sJSON))
+        {
+        return return_error_info(pt, "database_error", "AddSnapshotPath",
+                                 m_pDBSnapshots ->error().name() );
+        }
+
+    return snapshot;
     }
 
 /// Add a list of files in one path to a snapshot
@@ -138,9 +255,31 @@ boost::property_tree::ptree SnapshotServerModelKC::AddSnapshotPath(boost::proper
 /// file in a previous snapshot
 boost::property_tree::ptree SnapshotServerModelKC::AddSnapshotFiles(boost::property_tree::ptree &pt)
     {
-    boost::property_tree::ptree ret;
-    return ret;
+    if ( ! has_required_args(pt, "AddSnapshotPath") )
+        return return_error_info(pt, "bad_arguments", "AddSnapshotPath");
+
+    std::string sSnapshothandle   = pt.get<std::string>("snapshothandle") ;
+    std::string sSnapshotPath     = pt.get<std::string>("path") ;
+    std::string sPathhandle       = change_handle(sSnapshothandle.c_str(), SNAPSHOT_HANDLE_PREFIX, PATH_HANDLE_PREFIX);
     
+    std::string sJSON ;
+    boost::property_tree::ptree snapshot;
+    
+    if( m_pDBSnapshots -> get (sPathhandle, & sJSON))
+        {
+        snapshot = pt_from_json(sJSON) ;
+        }
+
+    snapshot.put("snapshothandle", sSnapshothandle);
+    
+    sJSON = json_from_pt(snapshot) ;
+    
+    if( m_pDBSnapshots -> set (sPathhandle, sJSON))
+        {
+        return return_error_info(pt, "database_error", "AddSnapshotPath",
+                                 m_pDBSnapshots ->error().name() );
+        }    
+    return snapshot ;
     }
 
   

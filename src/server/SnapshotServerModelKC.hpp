@@ -25,6 +25,9 @@ public:
     SnapshotServerModelKC(const SnapshotServerModelKC& orig);
     virtual ~SnapshotServerModelKC();
     
+    virtual void Provision(boost::property_tree::ptree &pt) ;
+    virtual void Cleanup() ;
+    
     // Getter
     // Get a handle for a client
     virtual boost::property_tree::ptree GetClientHandle(boost::property_tree::ptree &pt);
