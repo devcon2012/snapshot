@@ -25,6 +25,8 @@ FILE(GLOB TESTHEADERS tests/*.h)
 message(STATUS "Test sources/headers: " ${TESTSOURCES} ${TESTHEADERS})
 source_group("Includes" REGULAR_EXPRESSION \\.hp* )
 
+add_definitions(-Wno-unused-but-set-variable)
+
 add_executable(test-runner ${RUNNERSOURCES} ${RUNNERHEADERS} ${TESTSOURCES} ${TESTHEADERS})
 
 target_link_libraries(test-runner 
@@ -32,6 +34,10 @@ target_link_libraries(test-runner
                         ${KYOTOCABINET_LIBRARIES}
                         boost_filesystem boost_system) 
    
+add_executable(kcdump kcdump.cpp)
+target_link_libraries(kcdump 
+                        ${KYOTOCABINET_LIBRARIES}
+                        boost_filesystem boost_system) 
     
 add_test(test1 test-runner arg1 arg2 ..)
 

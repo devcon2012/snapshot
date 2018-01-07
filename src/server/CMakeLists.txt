@@ -18,6 +18,9 @@ FILE(GLOB SERVERLIBHEADERS Snapshot*.hpp)
 message(STATUS "Server sources/headers: " ${SERVERSOURCES} ${SERVERHEADERS})
 message(STATUS "ServerLib sources/headers: " ${SERVERLIBSOURCES} )
 
+# kyotocabinet requires this or we get spammed
+add_definitions(-Wno-unused-but-set-variable)
+
 source_group("Includes" REGULAR_EXPRESSION \\.hpp )
 
 set(MODULE_NAME "SnapshotServerLibrary")

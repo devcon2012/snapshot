@@ -59,7 +59,11 @@ protected:
  
     virtual void open_client_dbs(std::string const &sHandle) ;
     virtual void close_client_dbs() ;
-        
+    virtual boost::property_tree::ptree return_db_error_info(boost::property_tree::ptree &pt, 
+                          kyotocabinet::PolyDB    * pDB ,
+                    const std::string &sLocation,
+                    const std::string &sInfo);
+
     /// Database file containing clients. Global file.
     std::string               m_sDBClientFilename ;
 

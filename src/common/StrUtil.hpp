@@ -16,6 +16,11 @@
 
 #include <string>
 
+#define BOOST_SPIRIT_THREADSAFE
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+
+
 class StrUtil 
     {
 public:
@@ -29,7 +34,22 @@ public:
     static std::string StrSubstAll(const std::string &sIn,
                             const std::string &sOld, 
                             const std::string &sNew);
+
+    static void add_vector(boost::property_tree::ptree &pt,
+                        std::string const &sArrayName,
+                        std::vector<std::string> &sArray);
     
+    static void get_vector(boost::property_tree::ptree &pt,
+                        std::string const &sArrayName,
+                        std::vector<std::string> &sArray);
+    
+    static std::string str2json(const char ** str, int n) ;
+    static boost::property_tree::ptree pt_from_json(std::string const &sJSON) ;
+    static std::string json_from_pt(boost::property_tree::ptree const &pt)  ;
+ 
+    static void dump_pt(std::ostream &out, boost::property_tree::ptree &pt);
+    static void dump_pt(boost::property_tree::ptree &pt);
+
 private:
 
     };

@@ -5,6 +5,8 @@
  * Created on 29. Dezember 2017, 11:00
  */
 
+#include <iostream>
+
 #include "SnapshotServerModel.hpp"
 #include "SnapshotServerModelArgs.hpp"
 #include "../common/SnapshotException.hpp"
@@ -16,6 +18,7 @@ using namespace std ;
 // Livecycle
 SnapshotServerModel::SnapshotServerModel()
     {
+    srand(time(NULL)) ;
     build_required_args() ;
     }
 
@@ -38,12 +41,7 @@ SnapshotServerModel::~SnapshotServerModel()
 /// @ret parsed JSOn ptree
 boost::property_tree::ptree SnapshotServerModel::pt_from_json(std::string const &sJSON) 
     {
-    std::istringstream sOut(sJSON);
-    boost::property_tree::ptree xRet;
-    
-    boost::property_tree::read_json(sOut, xRet);
-    return xRet ;
-    
+    return StrUtil::pt_from_json(sJSON) ;
     }
 
 /// Add a list of files in one path to a snapshot
@@ -54,60 +52,18 @@ boost::property_tree::ptree SnapshotServerModel::pt_from_json(std::string const 
 /// @ret parsed JSOn ptree
 std::string SnapshotServerModel::json_from_pt(boost::property_tree::ptree const &pt) 
     {
-    std::ostringstream sOut;
-    
-    boost::property_tree::write_json(sOut, pt);
-    return sOut.str() ;
-    
+    return StrUtil::json_from_pt(pt) ;
     }
 
 /// construct a simple json key->value list
 /// @var str a la "key1;value1;key2;value..."
 /// @ret sJSON a la "{key1:value1, key2: ..."
-std::string SnapshotServerModel::str2json(const char * str) 
+std::string SnapshotServerModel::str2json(const char ** str, int n) 
     {
-    std::stringstream sJSON ;
-    std::string  sIn(str);
-    
-    sJSON << "{" ;
-    while(true)
-        {
-        }
-    sJSON << "}";
-    return sJSON.str();
+    return StrUtil::str2json(str, n) ;
     }
 
-/// Add a string vector to a pt so it is later rendered as a JSON array
-void SnapshotServerModel::add_vector(boost::property_tree::ptree &pt,
-                    std::string &sArrayName,
-                    std::vector<std::string> &sArray)
-    {
-    boost::property_tree::ptree array;
-    
-    for ( auto i = sArray.begin(); i != sArray.end(); i++)
-        {
-        boost::property_tree::ptree kid ;
-        kid.put("", *i);
-        array.push_back(std::make_pair("", kid));
-        }
 
-    pt.add_child(sArrayName, array) ;
-    }
-
-/// Add a string vector to a pt so it is later rendered as a JSON array
-void SnapshotServerModel::get_vector(boost::property_tree::ptree &pt,
-                    std::string &sArrayName,
-                    std::vector<std::string> &sArray)
-    {
-    boost::property_tree::ptree &array = pt.get_child(sArrayName) ;
-
-    for ( auto i = array.begin(); i != array.end(); i++)
-        {
-        sArray.push_back(i->second.get_value<std::string>());
-        }
-
-    pt.add_child(sArrayName, array) ;
-    }
 
 /// Check a functions arguments for required args
 /// @var args_in Argument pt to be checked
@@ -117,18 +73,26 @@ bool SnapshotServerModel::has_required_args(boost::property_tree::ptree &args_in
                            const std::string &sFunction)
     {
     auto required = m_xRequiredArgs.get_child(sFunction);
+    std::string key ;
     try {
         for ( auto i=required.begin(); i!= required.end(); i++)
             {
-            auto key = i->first ;
-            auto val = i->second ;
+            key = i->first ;
+            auto val = i->second.data() ;
             auto has = args_in.get<std::string>(key) ;
-            if (val == "handle" && (val.length() <9) )
-                throw 1;
+            if (val == "handle" && (has.length() <9) )
+                throw std::string("bad handle ") + has + " for " + key;   
+            
             }
+        }
+    catch (std::string e)
+        {
+        args_in.add("ERROR", e);
+        return false ;
         }
     catch (...)
         {
+        args_in.add("ERROR", std::string("missing ") + key);
         return false ;
         }
     
@@ -152,8 +116,11 @@ boost::property_tree::ptree SnapshotServerModel::return_error_info(boost::proper
         kid.add(sType, sInfo); 
     std::string sReason = pt.get("ERROR", "") ;
     if( sReason.length()>0)
-        kid.add(sType, sInfo); 
+        kid.add(sType, sReason); 
     ret.add_child("ERROR", kid) ;
+    
+    std::cerr << "ERROR: " << sType << " - " << sLocation << " - " << sInfo 
+            << " - " << sReason << "\n" ;
     return ret ;
     }
 

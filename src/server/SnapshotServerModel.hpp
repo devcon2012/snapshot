@@ -60,8 +60,10 @@ public:
     
     virtual std::string create_handle(const char * prefix=NULL) ;
     virtual std::string change_handle(const char *handle, const char * old_prefix, const char * new_prefix) ;
+    virtual std::string change_handle(const std::string &sHandle, const char * old_prefix, const char * new_prefix) 
+            { return change_handle(sHandle.c_str(), old_prefix, new_prefix); } 
     
-    virtual std::string str2json(const char * str) ;
+    virtual std::string str2json(const char ** str, int n=0) ;
     virtual boost::property_tree::ptree pt_from_json(std::string const &sJSON) ;
     virtual std::string json_from_pt(boost::property_tree::ptree const &pt)  ;
  
@@ -77,16 +79,7 @@ public:
                         const std::string &sType,
                         const std::string &sLocation,
                         const std::string &sInfo=""
-                        );
-
-    virtual void add_vector(boost::property_tree::ptree &pt,
-                        std::string &sArrayName,
-                        std::vector<std::string> &sArray);
-    
-    virtual void get_vector(boost::property_tree::ptree &pt,
-                        std::string &sArrayName,
-                        std::vector<std::string> &sArray);
-    
+                        );    
     
     boost::property_tree::ptree m_xRequiredArgs ;
 

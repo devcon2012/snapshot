@@ -28,6 +28,7 @@ static std::string sRequiredArgs =
                 " \"snapshothandle\" :  \"handle\" },"
             "\"GetSnapshotFiles\": "
                 "{\"clienthandle\" :    \"handle\" ,"
+                " \"pathhandle\" :      \"handle\" ,"
                 " \"snapshothandle\" :  \"handle\" },"
 
             "\"AddSnapshot\": "
@@ -41,7 +42,8 @@ static std::string sRequiredArgs =
                 "{\"clienthandle\" :    \"handle\" ,"
                 " \"snapshothandle\" :  \"handle\" ,"
                 " \"pathhandle\" :      \"handle\" ,"
-                " \"files\" :           \"array\" }"
+                " \"filenames\" :       \"array\" ,"
+                " \"filemetainfos\" :   \"array\" }"
 
         "}" ;
 ;
