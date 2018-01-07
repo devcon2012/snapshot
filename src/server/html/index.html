@@ -4,35 +4,34 @@
         <title>Snapshot Server</title>
         <meta charset="UTF-8">
         <script src="js/jquery.js"></script>
+        <script src="js/snapshotquery.js"></script>
         <link rel="stylesheet" type="text/css" href="css/snapshot.css">
 <script>
-    var ctrl = {action: 'enumerate', arg: 'snapshots'};
-    
+    var login = {action: 'get', arg: 'clienthandle', subject: 'cn=test'};
+    var enumerate_snapshots = {action: 'enumerate', arg: 'snapshots', clienthandle: 'unknown'};
+    var dump_snapshot = {action: 'get', arg: 'snapshotpathes', clienthandle: 'unknown', snapshothandle: 'unknown'};
+    var dump_files = {action: 'get', arg: 'snapshotfiles', clienthandle: 'unknown', snapshothandle: 'unknown'};
+
 $(document).ready(function(){
-    $("button").click(function(){
-        $.ajax({
-            url:            'json',
-            type:           'post',
-            mimeType:       'application/json',
-            data:           JSON.stringify(ctrl),        
-            dataType:       'json',
-            headers:        {'Content-Type' : 'application/json'},
-            success: function(data,status){
-                            $("#display").html(JSON.stringify(data));
-                            //alert("Data: " + data + "\nStatus: " + status);
-                        },
-            error: function(xhr, desc, err){
-                            console.log(xhr);
-                            console.log("Desc:"+desc+" Err:"+err);
-                        }
-            })
+    $(".login")        .click(function() { generic_query(login, render_json); });
+    $(".snapshots")    .click(function() { generic_query(enumerate_snapshots, render_snapshots); });
+    $(".dump_snapshot").click(function() { generic_query(dump_snapshot, render_snapshot); });
+    $(".dump_files")   .click(function() { generic_query(dump_files, render_files); });
     });
-});
+
+
 </script>        
     </head>
     <body>
-            <textarea id="display" name="display" rows="25" cols="80"></textarea>
-            <br>
-            <button type=submit title="OK" >OK</button>
+        <textarea id="display" name="display" rows="25" cols="80"></textarea>
+        <br>
+        client: <input class='clienthandle' >
+        snapshot <input class='snapshothandle' >
+        path: <input class='pathhandle' >
+        <br>
+        <button class='login' type=submit title="LOGIN" >LOGIN</button>
+        <button class='snapshots' type=submit title="SNAPSHOTS" >SNAPSHOTS</button>
+        <button class='dump_snapshot' type=submit title="SNAPSHOTDUMP" >SNAPSHOTDUMP</button>
+        <button class='dump_files' type=submit title="SNAPSHOTFILES" >SNAPSHOTFILES</button>
     </body>
 </html>

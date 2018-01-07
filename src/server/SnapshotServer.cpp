@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "../common/SnapshotException.hpp"
+#include "../common/StrUtil.hpp"
 #include "SnapshotServer.hpp"
 #include "SnapshotServerModelKC.hpp"
 
@@ -24,6 +25,11 @@ SnapshotServer::SnapshotServer(int argc, char** argv)
     m_sMimeMap [".json"] = "application/json" ;
     m_sMimeMap [".html"] = "text/html" ;
     m_pModel = new SnapshotServerModelKC() ;
+    
+ 
+    boost::property_tree::ptree test_settings 
+            = StrUtil::pt_from_json("{\"DBRoot\": \"/home/klaus/src/owngit/snapshot/build/src/server/db\"}");
+    m_pModel -> Provision(test_settings)  ;   
     }
 
 SnapshotServer::SnapshotServer(const SnapshotServer& orig)
@@ -93,6 +99,12 @@ boost::property_tree::ptree SnapshotServer::Getter(boost::property_tree::ptree &
     
     if ( sArg == "clienthandle" )
         return m_pModel -> GetClientHandle(pt);
+
+    if ( sArg == "snapshotpathes" )
+        return m_pModel -> GetSnapshotPathes(pt);
+
+    if ( sArg == "snapshotfiles" )
+        return m_pModel -> GetSnapshotFiles(pt);
     
     throw SnapshotException("invalid_argument", "getter", sArg.c_str());
     }
