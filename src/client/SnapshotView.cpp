@@ -11,8 +11,9 @@
  * Created on 25. Dezember 2017, 21:07
  */
 
-#include "SnapshotView.hpp"
 #include <wx/wx.h>
+#include "SnapshotView.hpp"
+#include "SnapshotSettings.hpp"
 
 wxBEGIN_EVENT_TABLE(SnapshotView, wxFrame)
     EVT_MENU(wxID_EXIT,  SnapshotView::OnExit)
@@ -31,12 +32,34 @@ SnapshotView::~SnapshotView()
     {
     }
 
+void SnapshotView::UpdateStatus(const char * sStatus) 
+    {
+    m_statusBar1 ->SetStatusText(wxString(sStatus)) ;
+    }
+
 bool SnapshotView::OnInit()
     {
     this->Show(true);
+    return true;
     }
 
 void SnapshotView::OnExit(wxCommandEvent &e) 
     {
-    exit(0);
+    wxTheApp->OnExit();
+    }
+
+void SnapshotView::OnMenuSettings( wxCommandEvent& event ) 
+    {
+    SnapshotSettings * pSettings = new SnapshotSettings(this);
+    pSettings -> ShowModal() ;
+    }
+
+void SnapshotView::OnMenuQuit( wxCommandEvent& event ) 
+    {
+    OnExit(event) ;
+    }
+
+void SnapshotView::OnConnectServer( wxCommandEvent& event ) 
+    {
+    UpdateStatus("Connecting...") ;
     }

@@ -6,6 +6,7 @@
  */
 
 #include <stdexcept>
+#include <fstream>
 
 #include "../common/SnapshotException.hpp"
 #include "../common/StrUtil.hpp"
@@ -151,7 +152,15 @@ boost::property_tree::ptree SnapshotServer::Deleter(boost::property_tree::ptree 
 void SnapshotServer::log(std::shared_ptr<HttpServer::Request> const &request)
     {
     time_t now = time(NULL) ;
-    std::cerr << now << " " << "Request " << request->method << ": " << request->path << "\n" ;
+    std::cerr << ctime(&now) << " " << "Request " << request->method << ": " << request->path 
+            << " q=" <<request->query_string << "\n" ;
+    for ( auto i= request->header.begin() ; i != request->header.end(); i++)
+        {
+        std::cerr << "    " << i->first << ": " << i->second << "\n";
+        }
+    std::cerr << "    \n";
+    
+    
     /* char buf[257] ;
     buf[0] = 0;
     request -> content.read(buf, 256);
@@ -163,25 +172,25 @@ void SnapshotServer::log(std::shared_ptr<HttpServer::Request> const &request)
 void SnapshotServer::log(std::shared_ptr<HttpServer::Request> const &request, SimpleWeb::error_code const &e)
     {
     time_t now = time(NULL) ;
-    std::cerr << now << " " << "Request " << request->method << " ERROR " << e.message() << ": " << request->path << "\n" ;
+    std::cerr << ctime(&now) << " " << "Request " << request->method << " ERROR " << e.message() << ": " << request->path << "\n" ;
     }
 
 void SnapshotServer::log(std::shared_ptr<HttpServer::Response> const &response)
     {
     time_t now = time(NULL) ;
-    std::cerr << now << " " << "Response \n" ;
+    std::cerr << ctime(&now) << " " << "Response \n" ;
     }
 
 void SnapshotServer::log(std::shared_ptr<HttpServer::Response> const &response, SimpleWeb::error_code const &e)
     {
     time_t now = time(NULL) ;
-    std::cerr << now << " " << "Response error " << e.message() << "\n" ;
+    std::cerr << ctime(&now) << " " << "Response error " << e.message() << "\n" ;
     }
 
 void SnapshotServer::log(const std::exception &e) 
     {
     time_t now = time(NULL) ;
-    std::cerr << now << " " << "Error: " << e.what() << "\n" ;
+    std::cerr << ctime(&now) << " " << "Error: " << e.what() << "\n" ;
     }
 
 std::string SnapshotServer::Control(std::shared_ptr<HttpServer::Request> &request) 
@@ -210,40 +219,75 @@ std::string SnapshotServer::Control(std::shared_ptr<HttpServer::Request> &reques
     
     } // ends Control
 
-std::string SnapshotServer::Upload(std::shared_ptr<HttpServer::Request> &request) 
+std::string SnapshotServer::Uploadpath(std::shared_ptr<HttpServer::Request> &request) 
     {
-    boost::property_tree::ptree pt;
-    auto xContentType = request -> header.find("Content-Type") ;
-    std::string sContentType("application/octet-stream") ;
-
-    if (xContentType != request->header.end())
-        sContentType = xContentType -> second ;
-
-    if(sContentType == "application/json")
-        read_json(request->content, pt);
+    auto querypar = request -> parse_query_string() ;
+    auto fhandle = querypar.find("filehandle") ;
     
-    pt.add("Key", "Value") ;
-    std::ostringstream xRet ;
-    write_json(xRet, pt);
-    std::cerr << "JSON:: return" << xRet.str() << "\n" ;
-    return xRet.str();
+    std::string ret("/tmp/serverfile");
+    
+    return ret ;
     }
 
-std::string SnapshotServer::Download(std::shared_ptr<HttpServer::Request> &request) 
+std::string SnapshotServer::Downloadpath(std::shared_ptr<HttpServer::Request> &request) 
     {
-    boost::property_tree::ptree pt;
-    auto xContentType = request -> header.find("Content-Type") ;
-    std::string sContentType("application/octet-stream") ;
-
-    if (xContentType != request->header.end())
-        sContentType = xContentType -> second ;
-
-    if(sContentType == "application/json")
-        read_json(request->content, pt);
+    auto querypar = request -> parse_query_string() ;
+    auto fhandle = querypar.find("filehandle") ;
     
-    pt.add("Key", "Value") ;
-    std::ostringstream xRet ;
-    write_json(xRet, pt);
-    std::cerr << "JSON:: return" << xRet.str() << "\n" ;
-    return xRet.str();
+    std::string ret("/tmp/serverfile");
+    
+    return ret ;
     }
+
+void SnapshotServer::read_and_send(const std::shared_ptr<HttpServer::Response> &response, 
+                                   const std::shared_ptr<std::ifstream> &ifs)
+    {
+    // Read and send 128 KB at a time
+    static std::vector<char> buffer(131072); // Safe when server is running on one thread
+    std::streamsize read_length;
+    if ((read_length = ifs->read(&buffer[0], static_cast<std::streamsize> (buffer.size())).gcount()) > 0)
+        {
+        response->write(&buffer[0], read_length);
+        if (read_length == static_cast<std::streamsize> (buffer.size()))
+            {
+            response->send([response, ifs](const SimpleWeb::error_code & ec)
+                {
+                if (!ec)
+                    read_and_send(response, ifs);
+                else
+                    std::cerr << "Connection interrupted" << std::endl;
+                });
+            }
+        }
+    }
+
+void SnapshotServer::receive_and_write(const std::shared_ptr<HttpServer::Request> &request,
+                                       const std::shared_ptr<std::ofstream> &ofs)
+    {
+    // Read and send 128 KB at a time
+    static std::vector<char> buffer(131072); // Safe when server is running on one thread
+    std::streamsize read_length;
+
+    while(true)
+        {
+        read_length = request->content.read(&buffer[0], static_cast<std::streamsize> (buffer.size())).gcount();
+        if(read_length<=0)
+            break ;
+        ofs->write(&buffer[0], static_cast<std::streamsize> (read_length));
+        
+        if ( *ofs )
+            {
+            if (read_length == static_cast<std::streamsize> (buffer.size()))
+                {
+                receive_and_write(request, ofs);
+                }
+            break;
+            }
+        else
+            {
+            std::cerr << "receive_and_write fail \n" ;
+            }
+        }
+    }
+
+

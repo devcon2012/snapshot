@@ -7,6 +7,7 @@
 
 #include <cstdlib>
 #include "SnapshotServer.hpp"
+#include "../common/SnapshotConfig.hpp"
 
 #include "http/server_http.hpp"
 
@@ -16,9 +17,6 @@
 #include <boost/property_tree/ptree.hpp>
 
 // Added for the default_resource example
-#include <algorithm>
-#include <boost/filesystem.hpp>
-#include <fstream>
 #include <vector>
 #include "http/crypto.hpp"
 
@@ -26,8 +24,9 @@ using namespace std;
 using namespace boost::property_tree;
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
-
+ 
 SnapshotServer * pDefaultServer = NULL ;
+SnapshotConfig * pConfig = NULL ;
 
 
 int main(int argc, char **argv)
@@ -36,7 +35,15 @@ int main(int argc, char **argv)
     // Unless you do more heavy non-threaded processing in the resources,
     // 1 thread is usually faster than several threads
     HttpServer server;
-    server.config.port = 8080;
+
+    const char * base = ( getenv("HOME") ? getenv("HOME") : "." ) ;
+    string sConfigFilename = std::string(base) + "/.snapshotserver" ;
+
+    pConfig = SnapshotConfig::GetDefaultConfig() ;
+    pConfig -> InitServerDefaults() ;
+    pConfig -> Load(sConfigFilename) ;
+    
+    server.config.port = pConfig -> GetInt("ServerPort", 8080);
     
     SnapshotServer *pServer = new SnapshotServer(argc, argv);
     pDefaultServer = pServer ;
@@ -71,12 +78,26 @@ int main(int argc, char **argv)
         try
             {
 
-            auto result = pDefaultServer -> Upload(request);
+            string filepath = pDefaultServer -> Uploadpath(request);
+
+            SimpleWeb::CaseInsensitiveMultimap header;
+
+            auto ofs = make_shared<ofstream>();
+            ofs->open(filepath, ofstream::out | ios::binary | ios::trunc);
+
+            if (*ofs)
+                {
+                pDefaultServer ->receive_and_write(request, ofs);
+                }
+            else
+                {
+                
+                }
             
-             *response << "HTTP/1.1 200 OK\r\n"
-                << "Content-Length: " << result.length() << "\r\n"
+             *response << "HTTP/1.1 200 OK\r\n\r\n" ;
+/*                << "Content-Length: " << result.length() << "\r\n"
                 << "Content-Type: application/json\r\n\r\n"
-                << result;
+                << result; */
                         
             }
         catch (const exception &e)
@@ -94,12 +115,29 @@ int main(int argc, char **argv)
         try
             {
 
-            auto result = pDefaultServer -> Download(request);
+            string filepath = pDefaultServer -> Downloadpath(request);
+            auto path = boost::filesystem::canonical(filepath);
+            SimpleWeb::CaseInsensitiveMultimap header;
+
+            auto ifs = make_shared<ifstream>();
+            ifs->open(filepath, ifstream::in | ios::binary | ios::ate);
+
+            if (*ifs)
+                {
+                auto length = ifs->tellg();
+                ifs->seekg(0, ios::beg);
+
+                header.emplace("Content-Length", to_string(length));
+                header.emplace("Content-Type", pDefaultServer->ext2mime(path.extension().c_str()));
+                response->write(header);
+
+                pDefaultServer ->read_and_send(response, ifs);
+                }
+            else
+                {
+                
+                }
             
-             *response << "HTTP/1.1 200 OK\r\n"
-                << "Content-Length: " << result.length() << "\r\n"
-                << "Content-Type: application/json\r\n\r\n"
-                << result;
                         
             }
         catch (const exception &e)
@@ -141,35 +179,7 @@ int main(int argc, char **argv)
                 header.emplace("Content-Length", to_string(length));
                 header.emplace("Content-Type", pDefaultServer->ext2mime(path.extension().c_str()));
                 response->write(header);
-
-                // Trick to define a recursive function within this scope (for example purposes)
-
-                class FileServer
-                    {
-                public:
-
-                    static void read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs)
-                        {
-                        // Read and send 128 KB at a time
-                        static vector<char> buffer(131072); // Safe when server is running on one thread
-                        streamsize read_length;
-                        if ((read_length = ifs->read(&buffer[0], static_cast<streamsize> (buffer.size())).gcount()) > 0)
-                            {
-                            response->write(&buffer[0], read_length);
-                            if (read_length == static_cast<streamsize> (buffer.size()))
-                                {
-                                response->send([response, ifs](const SimpleWeb::error_code & ec)
-                                    {
-                                    if (!ec)
-                                        read_and_send(response, ifs);
-                                    else
-                                        cerr << "Connection interrupted" << endl;
-                                    });
-                                }
-                            }
-                        }
-                                    };
-                FileServer::read_and_send(response, ifs);
+                pDefaultServer ->read_and_send(response, ifs);
                 }
             else
                 throw invalid_argument("could not read file");
@@ -197,4 +207,7 @@ int main(int argc, char **argv)
     this_thread::sleep_for(chrono::seconds(1));
 
     server_thread.join();
+    
+    pConfig -> Save(sConfigFilename) ;
+
     }

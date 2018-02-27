@@ -16,10 +16,14 @@
 
 #include <string>
 #include <map>
+#include <algorithm>
+#include <fstream>
+#include <memory>
 
 #define BOOST_SPIRIT_THREADSAFE
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/filesystem.hpp>
 
 #include "http/server_http.hpp"
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
@@ -35,11 +39,11 @@ public:
     /// Control - query snapshots, prepare UL/DL
     std::string Control(std::shared_ptr<HttpServer::Request> &request);
 
-    /// Upload - upload a file snapshot
-    std::string Upload(std::shared_ptr<HttpServer::Request> &request);
+    /// Downloadpath - return path of a saved file
+    std::string Downloadpath(std::shared_ptr<HttpServer::Request> &request);
 
-    /// Download -- download a saved file
-    std::string Download(std::shared_ptr<HttpServer::Request> &request);
+    /// Uploadpath - return path to save an upload
+    std::string Uploadpath(std::shared_ptr<HttpServer::Request> &request);
 
     boost::property_tree::ptree Action(boost::property_tree::ptree &pt);
     boost::property_tree::ptree Enumerate(boost::property_tree::ptree &pt);
@@ -57,6 +61,11 @@ public:
 
     /// map file extensions to mime type (utility function)
     std::string ext2mime(std::string const &s);
+
+    static void read_and_send    (const std::shared_ptr<HttpServer::Response> &response,
+                                    const std::shared_ptr<std::ifstream> &ifs) ;
+    static void receive_and_write(const std::shared_ptr<HttpServer::Request> &request,
+                                    const std::shared_ptr<std::ofstream> &ifs) ;
 
 private:
     std::map<std::string, std::string>      m_sMimeMap;

@@ -3,7 +3,7 @@
 #
 #
 #
-#
+#a
 message(STATUS "Client")
 
 #wxWidgets_ROOT_DIR      - Base wxWidgets directory
@@ -30,6 +30,9 @@ add_definitions(-I/usr/lib64/wx/include/gtk2-unicode-3.0 -I/usr/include/wx-3.0 -
 FILE(GLOB CLIENTSOURCES Client.cpp wx*.cpp)
 FILE(GLOB CLIENTHEADERS *.hpp)
 
+FILE(GLOB TOOLSOURCES Tool*.cpp )
+FILE(GLOB TOOLHEADERS Tool*.hpp)
+
 message(STATUS "Client sources/headers: " ${CLIENTSOURCES} ${CLIENTHEADERS} ${wxWidgets_CXX_FLAGS} )
 source_group("Includes" REGULAR_EXPRESSION \\.hpp )
 
@@ -44,4 +47,7 @@ add_executable(SnapshotClient ${CLIENTSOURCES} ${CLIENTHEADERS} )
 
 target_link_libraries(SnapshotClient ${MODULE_NAME} SnapshotLibrary boost_filesystem boost_system ${wxWidgets_LIBRARIES}) 
    
+add_executable(SnapshotTool ${TOOLSOURCES} ${TOOLHEADERS} )
+
+target_link_libraries(SnapshotTool SnapshotLibrary boost_filesystem boost_system pthread) 
 

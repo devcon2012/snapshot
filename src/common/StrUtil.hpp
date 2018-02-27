@@ -35,6 +35,10 @@ public:
                             const std::string &sOld, 
                             const std::string &sNew);
 
+    static void set_vector(boost::property_tree::ptree &pt,
+                        std::string const &sArrayName,
+                        std::vector<std::string> &sArray);
+
     static void add_vector(boost::property_tree::ptree &pt,
                         std::string const &sArrayName,
                         std::vector<std::string> &sArray);

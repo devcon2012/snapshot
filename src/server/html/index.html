@@ -10,7 +10,10 @@
     var login = {action: 'get', arg: 'clienthandle', subject: 'cn=test'};
     var enumerate_snapshots = {action: 'enumerate', arg: 'snapshots', clienthandle: 'unknown'};
     var dump_snapshot = {action: 'get', arg: 'snapshotpathes', clienthandle: 'unknown', snapshothandle: 'unknown'};
-    var dump_files = {action: 'get', arg: 'snapshotfiles', clienthandle: 'unknown', snapshothandle: 'unknown'};
+    var dump_files = {action: 'get', arg: 'snapshotfiles', clienthandle: 'unknown', snapshothandle: 'unknown',
+                        pathhandle: 'unknown'};
+    var get_file = {action: 'get', arg: 'snapshotfile', clienthandle: 'unknown', snapshothandle: 'unknown',
+                    pathhandle:'unknown', filehandle: 'unknown' };
 
 $(document).ready(function(){
     $(".login")        .click(function() { generic_query(login, render_json); });
@@ -26,12 +29,21 @@ $(document).ready(function(){
         <textarea id="display" name="display" rows="25" cols="80"></textarea>
         <br>
         client: <input class='clienthandle' >
-        snapshot <input class='snapshothandle' >
+        snapshot <input class='snapshothandle' ><br>
         path: <input class='pathhandle' >
+        file: <input class='filehandle' >
         <br>
         <button class='login' type=submit title="LOGIN" >LOGIN</button>
         <button class='snapshots' type=submit title="SNAPSHOTS" >SNAPSHOTS</button>
         <button class='dump_snapshot' type=submit title="SNAPSHOTDUMP" >SNAPSHOTDUMP</button>
         <button class='dump_files' type=submit title="SNAPSHOTFILES" >SNAPSHOTFILES</button>
+        <form class='dl_file' action="/dl">
+            <input type="submit" value="DL"> 
+            <input name="filehandle" id="dlfilehandle" type="hidden">
+        </form>
+        <form class='ul_file' action="/ul" method="post" enctype="multipart/form-data">
+            <input type="file" name="upload" > <input type="submit" value="UL"> 
+            <input name="filehandle" id="ulfilehandle" type="hidden">
+        </form>
     </body>
 </html>

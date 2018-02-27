@@ -18,7 +18,7 @@
 
 #include "SnapshotView.hpp"
 #include "SnapshotData.hpp"
-
+#include "../common/SnapshotConfig.hpp"
 
 class SnapshotClient : public wxApp
     {
@@ -29,10 +29,16 @@ public:
     virtual ~SnapshotClient() ;
     int Run() ;
     virtual bool OnInit();
+    virtual int OnExit();
     
 private:
-     
-    SnapshotView * m_pView ;
+    void              Init() ;
+    void              Cleanup() ;
+
+    std::string      m_sConfigFilename ;
+    SnapshotView    * m_pView ;
+    SnapshotConfig  * m_pConfig ;
+    
     };
 
 #endif /* SNAPSHOTCLIENT_HPP */

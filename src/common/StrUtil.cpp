@@ -56,6 +56,41 @@ std::string StrUtil::StrSubstAll(const std::string &sIn,
 
     return sRet ;    
     }
+
+/// set a string vector to a pt so it is later rendered as a JSON array
+void StrUtil::set_vector(boost::property_tree::ptree &pt,
+                        std::string const &sArrayName,
+                        std::vector<std::string> &sArray)
+    {
+    auto parray = pt.find(sArrayName) ;
+    
+    if( parray == pt.not_found())
+        {
+        boost::property_tree::ptree array;
+
+        for ( auto i = sArray.begin(); i != sArray.end(); i++)
+            {
+            boost::property_tree::ptree kid ;
+            kid.put("", *i);
+            array.push_back(std::make_pair("", kid));
+            }
+
+        pt.add_child(sArrayName, array) ;
+        }
+    else
+        {
+        boost::property_tree::ptree &array = (pt.to_iterator(parray))->second;
+        array.clear() ;
+        for ( auto i = sArray.begin(); i != sArray.end(); i++)
+            {
+            boost::property_tree::ptree kid ;
+            kid.put("", *i);
+            array.push_back(std::make_pair("", kid));
+            }
+        
+        }
+    }
+
 /// Add a string vector to a pt so it is later rendered as a JSON array
 void StrUtil::add_vector(boost::property_tree::ptree &pt,
                         std::string const &sArrayName,

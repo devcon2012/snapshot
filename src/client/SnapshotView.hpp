@@ -22,7 +22,13 @@ public:
     SnapshotView(int argc, char** argv);
     SnapshotView(const SnapshotView& orig);
     virtual ~SnapshotView();
+    void UpdateStatus(const char * sStatus) ;
     
+protected:
+    virtual void OnMenuSettings( wxCommandEvent& event ) ;
+    virtual void OnMenuQuit( wxCommandEvent& event ) ;
+    virtual void OnConnectServer( wxCommandEvent& event ) ;
+		
 
 private:
     virtual void ExitButton( wxCommandEvent& event ) { OnExit(event); }
