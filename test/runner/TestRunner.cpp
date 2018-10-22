@@ -13,6 +13,8 @@
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/TextTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
+#include <cppunit/TextOutputter.h>
+#include <cppunit/XmlOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/TestResult.h>
 #include <cppunit/TestResultCollector.h>
@@ -61,9 +63,14 @@ int main(int argc, char **argv)
 
     
     // Print test in a compiler compatible format.
-    CPPUNIT_NS::CompilerOutputter outputter(&result, CPPUNIT_NS::stdCOut());
+    // CPPUNIT_NS::CompilerOutputter outputter(&result, CPPUNIT_NS::stdCOut());
+    CPPUNIT_NS::TextOutputter outputter(&result, CPPUNIT_NS::stdCOut());
+    // CPPUNIT_NS::XmlOutputter outputter(&result, CPPUNIT_NS::stdCOut());
+    
+    // outputter.printHeader() ;
     outputter.write();
-
+    // outputter.printStatistics();
+    
     return result.wasSuccessful() ? 0 : 1;
     
     }

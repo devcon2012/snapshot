@@ -1,7 +1,7 @@
 #
 #
 #
-#
+# 
 #
 #a
 message(STATUS "Client")
@@ -37,6 +37,7 @@ message(STATUS "Client sources/headers: " ${CLIENTSOURCES} ${CLIENTHEADERS} ${wx
 source_group("Includes" REGULAR_EXPRESSION \\.hpp )
 
 FILE(GLOB CLIENTLIBSOURCES Snapshot*.cpp)
+message(STATUS "Clientlib: " ${CLIENTLIBSOURCES} )
 
 set(MODULE_NAME "SnapshotClientLibrary")
 set(MODULE_PREFIX "SNAPSHOTCLIENTLIB")
@@ -49,5 +50,5 @@ target_link_libraries(SnapshotClient ${MODULE_NAME} SnapshotLibrary boost_filesy
    
 add_executable(SnapshotTool ${TOOLSOURCES} ${TOOLHEADERS} )
 
-target_link_libraries(SnapshotTool SnapshotLibrary boost_filesystem boost_system pthread) 
+target_link_libraries(SnapshotTool SnapshotLibrary SnapshotClientLibrary boost_filesystem boost_system pthread    ) 
 

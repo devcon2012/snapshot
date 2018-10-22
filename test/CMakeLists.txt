@@ -3,7 +3,7 @@
 #
 #
 #
-#
+# 
 message(STATUS "Tests")
 
 enable_testing()
@@ -20,24 +20,43 @@ FILE(GLOB RUNNERSOURCES runner/*.cpp)
 FILE(GLOB RUNNERHEADERS runner/*.h)
 message(STATUS "Runner sources/headers: " ${RUNNERSOURCES} ${RUNNERHEADERS}) 
 
-FILE(GLOB TESTSOURCES tests/*Test.cpp)
-FILE(GLOB TESTHEADERS tests/*.h)
-message(STATUS "Test sources/headers: " ${TESTSOURCES} ${TESTHEADERS})
+# Server tests
+FILE(GLOB TESTSERVERSOURCES tests-server/*Test.cpp)
+FILE(GLOB TESTSERVERHEADERS tests-server/*.h)
+message(STATUS "Test Server sources/headers: " ${TESTSERVERSOURCES} ${TESTSERVERHEADERS})
 source_group("Includes" REGULAR_EXPRESSION \\.hp* )
 
 add_definitions(-Wno-unused-but-set-variable)
 
-add_executable(test-runner ${RUNNERSOURCES} ${RUNNERHEADERS} ${TESTSOURCES} ${TESTHEADERS})
+add_executable(test-runner-server ${RUNNERSOURCES} ${RUNNERHEADERS} ${TESTSERVERSOURCES} ${TESTSERVERHEADERS})
 
-target_link_libraries(test-runner 
+target_link_libraries(test-runner-server 
                         cppunit SnapshotLibrary SnapshotClientLibrary SnapshotServerLibrary
                         ${KYOTOCABINET_LIBRARIES}
                         boost_filesystem boost_system) 
    
+# Client tests
+FILE(GLOB TESTCLIENTSOURCES tests-client/*Test.cpp)
+FILE(GLOB TESTCLIENTHEADERS tests-client/*.h)
+message(STATUS "Test Client sources/headers: " ${TESTCLIENTSOURCES} ${TESTCLIENTHEADERS})
+source_group("Includes" REGULAR_EXPRESSION \\.hp* )
+
+add_definitions(-Wno-unused-but-set-variable)
+
+add_executable(test-runner-client ${RUNNERSOURCES} ${RUNNERHEADERS} ${TESTCLIENTSOURCES} ${TESTCLIENTHEADERS})
+
+target_link_libraries(test-runner-client 
+                        cppunit SnapshotClientLibrary SnapshotLibrary SnapshotServerLibrary
+                        ${KYOTOCABINET_LIBRARIES}
+                        boost_filesystem boost_system) 
+   
+
+# kcdump tool
 add_executable(kcdump kcdump.cpp)
 target_link_libraries(kcdump 
                         ${KYOTOCABINET_LIBRARIES}
                         boost_filesystem boost_system) 
     
-add_test(test1 test-runner arg1 arg2 ..)
+add_test(test1 test-runner-server arg1 arg2 ..)
+add_test(test2 test-runner-client arg1 arg2 ..)
 

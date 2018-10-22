@@ -35,7 +35,7 @@ std::string SnapshotData::GetServer(int n /* = 0 */)
     {
     if ( ( n>=0 ) && (n<m_xServers.size()) )
         return m_xServers[n];
-    
+    return "" ;
     }
 
 /// How many servers?    

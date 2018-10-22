@@ -156,6 +156,14 @@ boost::property_tree::ptree StrUtil::pt_from_json(std::string const &sJSON)
     return xRet ;
     
     }
+boost::property_tree::ptree StrUtil::pt_from_json(std::basic_streambuf<char>* sJSON) 
+    {
+    std::istream sOut(sJSON);
+    boost::property_tree::ptree xRet;
+    
+    boost::property_tree::read_json(sOut, xRet);
+    return xRet ;
+    }
 
 /// Add a list of files in one path to a snapshot
 /// pt contains a snapshot handle, a path handle and a filename

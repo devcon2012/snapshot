@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include "SnapshotServer.hpp"
 #include "../common/SnapshotConfig.hpp"
+#include "../common/SnapshotLog.hpp"
 
 #include "http/server_http.hpp"
 
@@ -15,6 +16,11 @@
 #define BOOST_SPIRIT_THREADSAFE
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+
+#ifdef __linux__
+#include <signal.h>
+#include <unistd.h>
+#endif
 
 // Added for the default_resource example
 #include <vector>
@@ -25,9 +31,33 @@ using namespace boost::property_tree;
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
  
-SnapshotServer * pDefaultServer = NULL ;
-SnapshotConfig * pConfig = NULL ;
+SnapshotServer  * pDefaultServer    = NULL ;
+SnapshotConfig  * pConfig           = NULL ;
+std::string       sConfigFilename ;
+SnapshotLog     * pLog              = NULL ;
 
+#ifdef __linux__
+
+typedef void (*sighandler_t)(int);
+static sighandler_t 
+install_handler(int sig_nr, sighandler_t signalhandler) {
+   struct sigaction neu_sig, alt_sig;
+   neu_sig.sa_handler = signalhandler;
+   sigemptyset (&neu_sig.sa_mask);
+   neu_sig.sa_flags = SA_RESTART;   
+   if (sigaction (sig_nr, &neu_sig, &alt_sig) < 0)
+      return SIG_ERR;
+   return alt_sig.sa_handler;
+}
+static void handle_shutdown (int signr) 
+    {
+    std::cerr << "Shutdown..\n" ;
+    pConfig = SnapshotConfig::GetDefaultConfig() ;
+    pConfig -> Save(sConfigFilename) ;
+    
+   exit (0) ;
+    }
+#endif
 
 int main(int argc, char **argv)
     {
@@ -36,16 +66,54 @@ int main(int argc, char **argv)
     // 1 thread is usually faster than several threads
     HttpServer server;
 
-    const char * base = ( getenv("HOME") ? getenv("HOME") : "." ) ;
-    string sConfigFilename = std::string(base) + "/.snapshotserver" ;
-
+#ifdef __linux__
+    install_handler(SIGINT, handle_shutdown) ;
+#endif
+    
+    if( argc>2 )
+        {
+        if ( std::string(argv[1]) == "-c" )
+            sConfigFilename = std::string(argv[2]) ;
+        
+        char * tmp = argv[0] ;
+        argc-- ; argc --;
+        argv++ ; argv ++;
+        argv[0] = tmp ;
+        }
+    else
+        {
+        const char * base = ( getenv("HOME") ? getenv("HOME") : "." ) ;
+        sConfigFilename = std::string(base) + "/.snapshotserver" ;
+        }
     pConfig = SnapshotConfig::GetDefaultConfig() ;
     pConfig -> InitServerDefaults() ;
-    pConfig -> Load(sConfigFilename) ;
     
-    server.config.port = pConfig -> GetInt("ServerPort", 8080);
+    int verbosity = pConfig -> GetInt("Verbosity", 0) ;
+    pConfig -> Set("Verbosity", verbosity) ;
     
-    SnapshotServer *pServer = new SnapshotServer(argc, argv);
+    pLog = new SnapshotLog();
+    
+    try 
+        {
+        pConfig -> Load(sConfigFilename) ;
+        log(1,std::string("Got config from ") + sConfigFilename) ;
+        
+        }
+    catch(...)
+        {
+        log(1, "Use standard config\n") ;
+        }
+    
+    pLog -> Init() ;
+    
+    server.config.address   = pConfig -> GetString("ServerAddress", "127.0.0.1") ;
+    server.config.port      = pConfig -> GetInt("ServerPort", 8080) ;
+    
+    log(1, std::string("Server listening on ") 
+            + pConfig -> GetString("ServerAddress", "127.0.0.1") 
+            + ":" + pConfig -> GetString("ServerPort", "8080") ) ;
+    
+    SnapshotServer *pServer = new SnapshotServer(argc, argv) ;
     pDefaultServer = pServer ;
 
     // JSON Posts: Query snapshots etc

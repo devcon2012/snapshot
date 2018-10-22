@@ -30,6 +30,7 @@ public:
 
     virtual void InitClientDefaults() ;
     virtual void InitServerDefaults() ;
+    virtual void InitDefaults() ;
     
     virtual void Load(const std::string & sFilename ) ;
     virtual void Save(const std::string & sFilename ) ;

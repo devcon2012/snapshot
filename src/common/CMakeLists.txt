@@ -12,7 +12,6 @@ if(WIN32)
 	add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
-
 FILE(GLOB COMMONSOURCES *.cpp)
 set(MODULE_NAME "SnapshotLibrary") 
 set(MODULE_PREFIX "SNAPSHOTLIB")

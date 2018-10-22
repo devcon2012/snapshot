@@ -117,12 +117,21 @@ void SnapshotConfig::Set(const std::string & sProp,
 
 void SnapshotConfig::InitClientDefaults() 
     {
-    Set("ServerURL", "http://127.0.0.1:8088") ;
+    InitDefaults();
     }
 
 void SnapshotConfig::InitServerDefaults() 
     {
+    InitDefaults();
+    }
+
+void SnapshotConfig::InitDefaults() 
+    {
     Set("Timeout", 10) ;    
+    Set("Verbosity", 3) ;  
+    Set("ServerAddress", "127.0.0.1") ;
+    Set("ServerPort", "8088") ;
+    Set("ServerProto", "http") ;
     }
 
 
