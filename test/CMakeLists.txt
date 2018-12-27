@@ -1,5 +1,5 @@
 #
-#
+# 
 #
 #
 #
@@ -12,6 +12,7 @@ add_subdirectory(cppunit)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/runner) 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
 find_package(KyotoCabinet REQUIRED ) 
 include_directories(${KYOTOCABINET_INCLUDE_DIR})
@@ -20,6 +21,21 @@ FILE(GLOB RUNNERSOURCES runner/*.cpp)
 FILE(GLOB RUNNERHEADERS runner/*.h)
 message(STATUS "Runner sources/headers: " ${RUNNERSOURCES} ${RUNNERHEADERS}) 
 
+# Common tests
+FILE(GLOB TESTSCOMMONSOURCES tests-common/*Test.cpp)
+FILE(GLOB TESTSCOMMONHEADERS tests-common/*.h)
+message(STATUS "Test common sources/headers: " ${TESTSCOMMONSOURCES} ${TESTSCOMMONHEADERS})
+source_group("Includes" REGULAR_EXPRESSION \\.hp* )
+
+add_definitions(-Wno-unused-but-set-variable)
+
+add_executable(test-runner-common ${RUNNERSOURCES} ${RUNNERHEADERS} ${TESTSCOMMONSOURCES} ${TESTSCOMMONHEADERS})
+
+target_link_libraries(test-runner-common 
+                        cppunit SnapshotLibrary SnapshotClientLibrary SnapshotServerLibrary
+                        ${KYOTOCABINET_LIBRARIES}
+                        boost_filesystem boost_system) 
+   
 # Server tests
 FILE(GLOB TESTSERVERSOURCES tests-server/*Test.cpp)
 FILE(GLOB TESTSERVERHEADERS tests-server/*.h)
@@ -34,7 +50,7 @@ target_link_libraries(test-runner-server
                         cppunit SnapshotLibrary SnapshotClientLibrary SnapshotServerLibrary
                         ${KYOTOCABINET_LIBRARIES}
                         boost_filesystem boost_system) 
-   
+
 # Client tests
 FILE(GLOB TESTCLIENTSOURCES tests-client/*Test.cpp)
 FILE(GLOB TESTCLIENTHEADERS tests-client/*.h)
@@ -48,7 +64,7 @@ add_executable(test-runner-client ${RUNNERSOURCES} ${RUNNERHEADERS} ${TESTCLIENT
 target_link_libraries(test-runner-client 
                         cppunit SnapshotClientLibrary SnapshotLibrary SnapshotServerLibrary
                         ${KYOTOCABINET_LIBRARIES}
-                        boost_filesystem boost_system) 
+                        boost_filesystem boost_system pthread) 
    
 
 # kcdump tool

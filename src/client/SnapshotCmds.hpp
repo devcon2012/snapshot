@@ -6,7 +6,7 @@
  */
 
 /**
- * Create JSON Commands 
+ * Create JSON commands snt to the server and analyze results received.
  * 
  * 
  **/
@@ -15,6 +15,7 @@
 #define SNAPSHOTCMDS_HPP
 
 #include <sstream>
+#include <boost/property_tree/ptree.hpp>
 
 class SnapshotCmds 
     {
@@ -25,6 +26,8 @@ class SnapshotCmds
         virtual ~SnapshotCmds();
 
         static std::string GetClienthandle(const std::string &sSubject) ;
+        static bool IsError(boost::property_tree::ptree &p) ;
+        static std::string ErrorMessage(boost::property_tree::ptree &p) ;
 
     private:
 

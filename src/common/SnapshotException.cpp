@@ -14,22 +14,22 @@
 #include "SnapshotException.hpp"
 #include "I18N.hpp"
 
-SnapshotException::SnapshotException(const std::string &sArg)
+SnapshotException::SnapshotException(const std::string &sArg) noexcept
     {
     m_sMessage = sArg ;
     }
 
-SnapshotException::SnapshotException(const char * sType, const char * sArg1, const char * sArg2)
+SnapshotException::SnapshotException(const char * sType, const char * sArg1, const char * sArg2) noexcept
     {
     m_sMessage = I18N::I18N_interpolate(sType, sArg1, sArg2) ;
     }
 
 
-SnapshotException::SnapshotException(const SnapshotException& orig)
+SnapshotException::SnapshotException(const SnapshotException& orig) noexcept
     {
     }
 
-SnapshotException::~SnapshotException()
+SnapshotException::~SnapshotException() noexcept
     {
     }
 

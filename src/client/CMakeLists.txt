@@ -36,7 +36,7 @@ FILE(GLOB TOOLHEADERS Tool*.hpp)
 message(STATUS "Client sources/headers: " ${CLIENTSOURCES} ${CLIENTHEADERS} ${wxWidgets_CXX_FLAGS} )
 source_group("Includes" REGULAR_EXPRESSION \\.hpp )
 
-FILE(GLOB CLIENTLIBSOURCES Snapshot*.cpp)
+FILE(GLOB CLIENTLIBSOURCES Snapshot*.cpp Notificator.cpp)
 message(STATUS "Clientlib: " ${CLIENTLIBSOURCES} )
 
 set(MODULE_NAME "SnapshotClientLibrary")

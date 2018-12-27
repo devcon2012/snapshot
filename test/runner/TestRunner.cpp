@@ -22,6 +22,10 @@
 
 #include "TestSelektor.h"
 
+bool verbose    = false ;
+int progress    = 0 ;
+int output      = 1 ;
+
 int main_initializer(int argc, char **argv);
 
 int main(int argc, char **argv)
@@ -40,10 +44,31 @@ int main(int argc, char **argv)
     controller.addListener(&result);
 
     // Add a listener that print dots as test run.
-    //CPPUNIT_NS::BriefTestProgressListener progress;
-    CPPUNIT_NS::TextTestProgressListener progress;
-    controller.addListener(&progress);
-
+    if ( progress==0 )
+        {
+        std::cerr << "(no progress display)\n";
+        }
+    else if (progress==1)
+        {
+        static CPPUNIT_NS::BriefTestProgressListener progress;
+        controller.addListener(&progress);
+        }
+    else if (progress==2)
+        {
+        static CPPUNIT_NS::TextTestProgressListener progress;
+        controller.addListener(&progress);
+        }
+    else if (progress==3)
+        {
+        static CPPUNIT_NS::TestSuccessListener progress;
+        controller.addListener(&progress);
+        }
+    else
+        {
+        std::cerr << "unknown progress " << progress << " (must be 0-3)\n";
+        exit (1) ;
+        }
+       
     // Add the top suite to the test runner
     CPPUNIT_NS::TestRunner runner;
     
@@ -63,14 +88,32 @@ int main(int argc, char **argv)
 
     
     // Print test in a compiler compatible format.
-    // CPPUNIT_NS::CompilerOutputter outputter(&result, CPPUNIT_NS::stdCOut());
-    CPPUNIT_NS::TextOutputter outputter(&result, CPPUNIT_NS::stdCOut());
-    // CPPUNIT_NS::XmlOutputter outputter(&result, CPPUNIT_NS::stdCOut());
-    
-    // outputter.printHeader() ;
-    outputter.write();
-    // outputter.printStatistics();
-    
+    if (output==0)
+        {
+        std::cerr << "(no output display)\n";
+        }
+    else if (output==1)
+        {
+        CPPUNIT_NS::TextOutputter outputter(&result, CPPUNIT_NS::stdCOut());
+        outputter.printHeader() ;
+        outputter.write();
+        outputter.printStatistics();
+        }
+    else if (output==2)
+        {
+        CPPUNIT_NS::XmlOutputter outputter(&result, CPPUNIT_NS::stdCOut());
+        outputter.write();
+        }
+    else if (output==3)
+        {
+        static CPPUNIT_NS::CompilerOutputter outputter(&result, CPPUNIT_NS::stdCOut());
+        outputter.write();
+        }
+    else
+        {
+        std::cerr << "unknown output " << output << " (must be 0-3)\n";
+        exit(1) ;
+        }
     return result.wasSuccessful() ? 0 : 1;
     
     }
@@ -78,11 +121,13 @@ int main(int argc, char **argv)
 
 void Usage()
     {
-    std::cout << "Usage: xxx-runner [-v] [-d] [-l] [-c <class>] [-t <test>]" << std::endl;
+    std::cout << "Usage: xxx-runner [-v] [-d] [-l] [-c <class>] [-t <test>] [-o n] [-p n]" << std::endl;
     std::cout << "-l list classes / tests " << std::endl;
     std::cout << "-c <class> test only class" << std::endl;
     std::cout << "-t <test> test only test" << std::endl;
     std::cout << "-v toggles verbose output" << std::endl;
+    std::cout << "-o n output (1-xml, 2-compiler, 3-text)" << std::endl;
+    std::cout << "-p n progress (1-brief, 2-detailed)" << std::endl;
     std::cout << "-d waits for keyboard input to allow debugger attach (include -v)" << std::endl;
     }
 
@@ -102,6 +147,19 @@ int main_initializer(int argc, char **argv)
             }
         if(strcmp(argv[i], "-v") == 0)
             {
+            verbose = true ;
+            continue;
+            }
+        if(strcmp(argv[i], "-o") == 0)
+            {
+            i++;
+            output = atoi(argv[i]) ;
+            continue;
+            }
+        if(strcmp(argv[i], "-p") == 0)
+            {
+            i++;
+            progress = atoi(argv[i]) ;
             continue;
             }
         if(strcmp(argv[i], "-c") == 0)

@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <fstream>
 
+#include "../common/SnapshotConfig.hpp"
 #include "../common/SnapshotException.hpp"
 #include "../common/StrUtil.hpp"
 #include "SnapshotServer.hpp"
@@ -17,7 +18,7 @@ using namespace boost::property_tree::json_parser;
 
 /// Construct new snapshot server. This is the control component of the server gui
 /// The view is the html/jquery component
-SnapshotServer::SnapshotServer(int argc, char** argv)
+SnapshotServer::SnapshotServer(int argc, char** argv, SnapshotConfig  * pConfig)
     {
     m_sMimeMap [".css"]  = "text/css" ;
     m_sMimeMap [".ico"]  = "image/x-icon" ;
@@ -30,7 +31,13 @@ SnapshotServer::SnapshotServer(int argc, char** argv)
  
     boost::property_tree::ptree test_settings 
             = StrUtil::pt_from_json("{\"DBRoot\": \"/home/klaus/src/owngit/snapshot/build/src/server/db\"}");
-    m_pModel -> Provision(test_settings)  ;   
+    m_pModel -> Provision(test_settings)  ; 
+
+    boost::property_tree::ptree test_user 
+        = StrUtil::pt_from_json("{ \"subject\": \"cn=test\", \"arg\": \"SetClientHandle\" }");
+
+    m_pModel -> SetClientHandle(test_user);  ; 
+
     }
 
 SnapshotServer::SnapshotServer(const SnapshotServer& orig)

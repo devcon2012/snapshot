@@ -15,11 +15,22 @@
 #define SNAPSHOTSERVERMODEL_HPP
 
 #define BOOST_SPIRIT_THREADSAFE
+
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "../common/Properties.hpp"
 
-class SnapshotServerModel  {
+class SnapshotFileMeta : public Properties
+    {
+    SnapshotFileMeta() ;
+    SnapshotFileMeta(const SnapshotFileMeta & orig) ;
+    virtual ~SnapshotFileMeta() ;
+    
+    } ;
+
+class SnapshotServerModel  
+{
 public:
     SnapshotServerModel();
     SnapshotServerModel(const SnapshotServerModel& orig);

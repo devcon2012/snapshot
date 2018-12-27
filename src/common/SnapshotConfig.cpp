@@ -69,6 +69,7 @@ std::string SnapshotConfig::GetString(const std::string &sProp)
     {            
     return m_xSettings.get<std::string>(sProp);
     }
+
 std::vector<std::string> SnapshotConfig::GetStrings(const std::string &sProp) 
     {
     std::vector<std::string> xRet;
@@ -102,11 +103,13 @@ std::vector<std::string> SnapshotConfig::GetStrings(const std::string &sProp,
 void SnapshotConfig::Set(const std::string &sProp, const std::string &sVal) 
     {
     m_xSettings.put(sProp, sVal) ;
+    //m_xSettings.add (sProp, sVal) ;
     }
 
 void SnapshotConfig::Set(const std::string &sProp, const int nVal) 
     {
-    m_xSettings.put(sProp, nVal) ;    
+    m_xSettings.put(sProp, nVal) ;
+    // m_xSettings.add(sProp, nVal) ;
     }
 
 void SnapshotConfig::Set(const std::string & sProp, 

@@ -17,5 +17,6 @@ set(MODULE_NAME "SnapshotLibrary")
 set(MODULE_PREFIX "SNAPSHOTLIB")
 
 add_library(${MODULE_NAME} STATIC ${COMMONSOURCES})
+target_link_libraries(${MODULE_NAME} crypto)
 
 

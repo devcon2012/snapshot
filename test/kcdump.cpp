@@ -16,7 +16,7 @@ using namespace std;
 
 int Usage()
     {
-    
+    fprintf(stderr, "%s\n", "Usage: dump <dbfile> [re]") ;
     return 1;
     }
 /*
@@ -24,27 +24,29 @@ int Usage()
  */
 int main(int argc, char** argv)
     {
-
-    if(argc == 0)
-        return Usage();
     
     char * dbname ;
     const char * re = "." ;
     
     switch (argc)
         {
-        case 2:
+        case 3:
             re = argv[2] ;
-        case 1:
+        case 2:
             dbname = argv[1] ;
             break;
         default:
             return Usage() ;
         }
+            
 
     PolyDB    * pDB = new PolyDB() ;
 
-    pDB -> open(dbname, PolyDB::OREADER);
+    if ( ! pDB -> open(dbname, PolyDB::OREADER) )
+        {
+        fprintf(stderr, "Cannot open %s\n", dbname) ;
+        exit(1) ;
+        }
     auto *pCursor = pDB -> cursor();
     pCursor->jump();
     while(true)

@@ -167,6 +167,10 @@ namespace SimpleWeb {
           ss << rdbuf();
           return ss.str();
         }
+        catch(std::exception &e) {
+          std::cerr << e.what() ;
+          return std::string();
+        }
         catch(...) {
           return std::string();
         }
@@ -204,6 +208,10 @@ namespace SimpleWeb {
       std::string remote_endpoint_address() noexcept {
         try {
           return remote_endpoint->address().to_string();
+        }
+        catch(std::exception &e) {
+          std::cerr << e.what() ;
+          return std::string();
         }
         catch(...) {
           return std::string();
@@ -243,6 +251,7 @@ namespace SimpleWeb {
       }
 
       void set_timeout(long seconds) noexcept {
+        std::cerr << "Set timeout to " << seconds << std::endl ;
         if(seconds == 0) {
           timer = nullptr;
           return;
@@ -258,6 +267,7 @@ namespace SimpleWeb {
       }
 
       void cancel_timeout() noexcept {
+        std::cerr << "Timeout " << std::endl ;
         if(timer) {
           error_code ec;
           timer->cancel(ec);
@@ -470,9 +480,10 @@ namespace SimpleWeb {
             try {
               content_length = stoull(header_it->second);
             }
-            catch(const std::exception &) {
+            catch(const std::exception &e) {
               if(this->on_error)
                 this->on_error(session->request, make_error_code::make_error_code(errc::protocol_error));
+              std::cerr << e.what() ;
               return;
             }
             if(content_length > num_additional_bytes) {
@@ -535,6 +546,12 @@ namespace SimpleWeb {
           unsigned long length = 0;
           try {
             length = stoul(line, 0, 16);
+          }
+          catch(std::exception &e) {
+            if(this->on_error)
+              this->on_error(session->request, make_error_code::make_error_code(errc::protocol_error));
+            std::cerr << e.what() ;
+            return;
           }
           catch(...) {
             if(this->on_error)
@@ -673,9 +690,10 @@ namespace SimpleWeb {
       try {
         resource_function(response, session->request);
       }
-      catch(const std::exception &) {
+      catch(const std::exception & e) {
         if(on_error)
           on_error(session->request, make_error_code::make_error_code(errc::operation_canceled));
+        std::cerr << e.what() << std::endl ;
         return;
       }
     }

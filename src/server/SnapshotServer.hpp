@@ -28,39 +28,40 @@
 #include "http/server_http.hpp"
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 
-class SnapshotServerModel;
+class SnapshotServerModel ;
+class SnapshotConfig ;
 
 class SnapshotServer {
 public:
-    SnapshotServer(int argc, char** argv);
-    SnapshotServer(const SnapshotServer& orig);
+    SnapshotServer(int argc, char** argv, SnapshotConfig  * pConfig) ;
+    SnapshotServer(const SnapshotServer& orig) ;
     virtual ~SnapshotServer();
 
     /// Control - query snapshots, prepare UL/DL
-    std::string Control(std::shared_ptr<HttpServer::Request> &request);
+    std::string Control(std::shared_ptr<HttpServer::Request> &request) ;
 
     /// Downloadpath - return path of a saved file
-    std::string Downloadpath(std::shared_ptr<HttpServer::Request> &request);
+    std::string Downloadpath(std::shared_ptr<HttpServer::Request> &request) ;
 
     /// Uploadpath - return path to save an upload
-    std::string Uploadpath(std::shared_ptr<HttpServer::Request> &request);
+    std::string Uploadpath(std::shared_ptr<HttpServer::Request> &request) ;
 
-    boost::property_tree::ptree Action(boost::property_tree::ptree &pt);
-    boost::property_tree::ptree Enumerate(boost::property_tree::ptree &pt);
-    boost::property_tree::ptree Getter(boost::property_tree::ptree &pt);
-    boost::property_tree::ptree Setter(boost::property_tree::ptree &pt);
-    boost::property_tree::ptree Adder(boost::property_tree::ptree &pt);
-    boost::property_tree::ptree Deleter(boost::property_tree::ptree &pt);
+    boost::property_tree::ptree Action(boost::property_tree::ptree &pt) ;
+    boost::property_tree::ptree Enumerate(boost::property_tree::ptree &pt) ;
+    boost::property_tree::ptree Getter(boost::property_tree::ptree &pt) ;
+    boost::property_tree::ptree Setter(boost::property_tree::ptree &pt) ;
+    boost::property_tree::ptree Adder(boost::property_tree::ptree &pt) ;
+    boost::property_tree::ptree Deleter(boost::property_tree::ptree &pt) ;
     
     /// Logging
-    void log(std::shared_ptr<HttpServer::Request> const &request, SimpleWeb::error_code const &e);
-    void log(std::shared_ptr<HttpServer::Request> const &request);
-    void log(std::shared_ptr<HttpServer::Response> const &response);
-    void log(std::shared_ptr<HttpServer::Response> const &response, SimpleWeb::error_code const &e);
-    void log(const std::exception &e);
+    void log(std::shared_ptr<HttpServer::Request> const &request, SimpleWeb::error_code const &e) ;
+    void log(std::shared_ptr<HttpServer::Request> const &request) ;
+    void log(std::shared_ptr<HttpServer::Response> const &response) ;
+    void log(std::shared_ptr<HttpServer::Response> const &response, SimpleWeb::error_code const &e) ; 
+    void log(const std::exception &e) ;
 
     /// map file extensions to mime type (utility function)
-    std::string ext2mime(std::string const &s);
+    std::string ext2mime(std::string const &s) ;
 
     static void read_and_send    (const std::shared_ptr<HttpServer::Response> &response,
                                     const std::shared_ptr<std::ifstream> &ifs) ;
@@ -68,9 +69,9 @@ public:
                                     const std::shared_ptr<std::ofstream> &ifs) ;
 
 private:
-    std::map<std::string, std::string>      m_sMimeMap;
+    std::map<std::string, std::string>      m_sMimeMap ;
     SnapshotServerModel                   * m_pModel ;
-};
+} ;
 
 #endif /* SNAPSHOTSERVER_HPP */
 

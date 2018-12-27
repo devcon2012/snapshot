@@ -98,7 +98,7 @@ size_t SnapshotFiles::GetPathCount()
 void SnapshotFiles::CollectFileSnapshot() 
     {
 
-    for( int i = 0; i <m_xPathes.size(); i++ )
+    for( unsigned int i = 0; i < m_xPathes.size(); i++ )
         {
         try
             {

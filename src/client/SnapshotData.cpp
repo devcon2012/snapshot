@@ -33,7 +33,7 @@ void SnapshotData::AddServer(const char * server)
 /// Get server numbered n (default 0)
 std::string SnapshotData::GetServer(int n /* = 0 */)
     {
-    if ( ( n>=0 ) && (n<m_xServers.size()) )
+    if ( ( n>=0 ) && ( n < (int) m_xServers.size()) )
         return m_xServers[n];
     return "" ;
     }

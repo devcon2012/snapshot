@@ -60,7 +60,7 @@ void SnapshotSettings::UpdateSettings( wxCommandEvent& event )
     SnapshotConfig *pConfig = SnapshotConfig::GetDefaultConfig() ;
     pConfig -> Set("ServerURL", std::string(sServer.utf8_str())) ;
     std::vector<std::string> sDirs;
-    for(int i=0; i<m_listBoxSyncedDirs->GetCount(); i++)
+    for(unsigned int i=0; i<m_listBoxSyncedDirs->GetCount(); i++)
         {
         std::string sDir = m_listBoxSyncedDirs->GetString(i);
         sDirs.push_back(sDir) ;

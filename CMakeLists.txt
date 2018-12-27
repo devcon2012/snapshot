@@ -14,7 +14,8 @@ cmake_minimum_required(VERSION 2.8)
 set(PRJNAME DEMO)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/script/cmake)
-set(KYOTOCABINET_ROOT "/home/klaus/lib/kyotocabinet-1.2.76")
+#set(KYOTOCABINET_ROOT "/home/klaus/lib/kyotocabinet-1.2.76")
+set(KYOTOCABINET_ROOT "/")
 
 set(WITH_TESTS On)
 
@@ -31,7 +32,10 @@ set(CPP_STD "--std=c++14")
 set(CMAKE_CXX_COMPILER "g++-7")
 add_definitions(${CPP_STD} -fabi-version=2 -g3 -Wall )
 
-set(REQUIRED_MODULES OpenSSL z)
+# for doxygen
+set(ENV{SNAPSHOOT_SRC_ROOT} ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(REQUIRED_MODULES Boost OpenSSL z)
 set(OPTIONAL_MODULES WX APR)
 
 if ( WINDOWS )

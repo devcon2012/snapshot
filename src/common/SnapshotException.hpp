@@ -19,15 +19,19 @@
 
 class SnapshotException : public std::exception 
     {
-public:
-    explicit SnapshotException(const std::string &sArg);
-    explicit SnapshotException(const char * sType, const char * sArg1=NULL, const char * sArg2=NULL);
-    SnapshotException(const SnapshotException& orig);
-    virtual ~SnapshotException();
-    virtual const char * Message() {return m_sMessage.c_str();}
-private:
-    std::string m_sMessage;
-};
+
+    public:
+    explicit SnapshotException(const std::string &sArg) noexcept ;
+    explicit SnapshotException(const char * sType, const char * sArg1=NULL, const char * sArg2=NULL) noexcept ;
+    SnapshotException(const SnapshotException& orig) noexcept ;
+    exception & operator= (const exception&) noexcept ;
+    virtual ~SnapshotException() noexcept ;
+    virtual const char * Message() const noexcept { return what(); }
+    virtual const char * what() const noexcept { return m_sMessage.c_str(); }
+
+    private:
+    std::string m_sMessage ;
+    } ;
 
 #endif /* SNAPSHOTEXCEPTION_HPP */
 

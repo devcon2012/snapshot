@@ -11,6 +11,7 @@ class ClientConnectTest: public TestFixture
     CPPUNIT_TEST_SUITE(ClientConnectTest);
 
     CPPUNIT_TEST(testConnect);
+    CPPUNIT_TEST(testNotify);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -22,7 +23,8 @@ public:
 
 private:
     void clean() ;
-    void testConnect();
+    void testConnect() ;
+    void testNotify() ;
     
     SnapshotData * m_pData ;
     };

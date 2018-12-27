@@ -113,7 +113,7 @@ int main(int argc, char **argv)
             + pConfig -> GetString("ServerAddress", "127.0.0.1") 
             + ":" + pConfig -> GetString("ServerPort", "8080") ) ;
     
-    SnapshotServer *pServer = new SnapshotServer(argc, argv) ;
+    SnapshotServer *pServer = new SnapshotServer(argc, argv, pConfig) ;
     pDefaultServer = pServer ;
 
     // JSON Posts: Query snapshots etc
@@ -161,9 +161,14 @@ int main(int argc, char **argv)
                 {
                 
                 }
-            
-             *response << "HTTP/1.1 200 OK\r\n\r\n" ;
-/*                << "Content-Length: " << result.length() << "\r\n"
+                std::string content = "OK" ;
+                *response << "HTTP/1.1 200 OK\r\n"
+                         << "Content-Type: text/ascii\r\n"
+                         << "Content-Length: " << content.length() << "\r\n\r\n"
+                         << content;
+
+/*             *response << "HTTP/1.1 200 OK\r\n" ;
+                << "Content-Length: " << result.length() << "\r\n"
                 << "Content-Type: application/json\r\n\r\n"
                 << result; */
                         
@@ -223,10 +228,11 @@ int main(int argc, char **argv)
     server.default_resource["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request)
         {
         pDefaultServer -> log(request);
+        auto server_root_path = boost::filesystem::path( pConfig -> GetString("ServerRoot") ) ;
+        auto web_root_path = server_root_path  / "src/server/html" ;
         try
             {
-            auto web_root_path = boost::filesystem::canonical("html");
-            auto path = boost::filesystem::canonical(web_root_path / request->path);
+            auto path = web_root_path / request->path ;
             // Check if path is within web_root_path
             if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
                 !equal(web_root_path.begin(), web_root_path.end(), path.begin()))

@@ -32,3 +32,22 @@ std::string SnapshotCmds::GetClienthandle(const std::string &sSubject)
     sCmd << "{\"action\":\"get\",\"arg\":\"clienthandle\",\"subject\":\"" << sSubject << "\"}" ;
     return sCmd.str() ;
     }
+
+bool SnapshotCmds::IsError(boost::property_tree::ptree &p)
+    {
+    try
+        {
+        p.get_child("Error");
+        return true ;
+        }
+    catch (...)
+        {
+        return false ;
+        }
+    }
+
+std::string SnapshotCmds::ErrorMessage(boost::property_tree::ptree &p) 
+    {
+    boost::property_tree::ptree e = p.get_child("Error") ;
+    return e.front().first; 
+    }
