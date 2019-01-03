@@ -22,11 +22,11 @@ public:
     /// Type collecting file state info: Name
     typedef struct FileSnapshot
         {
-        std::string sFileName ;     /// Name without path
-        time_t      nFileMtime ;    /// File Mtime
-        size_t      nFileSize ;     /// File Size   
-        ssize_t      nFilePathNo ;   /// Index into path vector
-        
+        std::string sFileName ;         /// Name without path
+        time_t      nFileMtime ;        /// File Mtime
+        size_t      nFileSize ;         /// File Size   
+        ssize_t      nFilePathNo ;      /// Index into path vector
+        std::string  shash ;            /// Hash from SnapshotHash
         FileSnapshot(boost::filesystem::path p, int n=-1) ;
         } tFileSnapshot ;
     SnapshotFiles();

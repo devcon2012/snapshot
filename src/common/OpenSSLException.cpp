@@ -16,12 +16,14 @@
 
 #include "OpenSSLException.hpp"
 
-OpenSSLException::OpenSSLException() noexcept
+OpenSSLException::OpenSSLException(const std::string &sWhere) noexcept
     {
+    m_sWhere = sWhere ;
     }
 
 OpenSSLException::OpenSSLException(const OpenSSLException& orig) noexcept
     {
+    m_sWhere = orig.m_sWhere ;
     }
 
 OpenSSLException::~OpenSSLException() noexcept
@@ -36,7 +38,7 @@ OpenSSLException& OpenSSLException::operator= (const OpenSSLException &src) noex
 const char* OpenSSLException::what() const noexcept 
     {
     static std::stringstream buf ;
-    buf.clear() ; buf.str("") ;
+    buf.clear() ; buf.str(m_sWhere) ;
     unsigned long e ;
     while ( (e = ERR_get_error()) != 0  )
         {

@@ -16,6 +16,38 @@
 
 using namespace boost::property_tree::json_parser;
 
+extern HttpsServer * pHttpServer ;
+
+bool SimpleWeb::client_verification::operator()(bool preverified, boost::asio::ssl::verify_context& ctx) 
+       {
+        if ( preverified )
+            {
+            cert_ = X509_STORE_CTX_get_current_cert(ctx.native_handle());
+            sSubject = "(NONE)" ;
+            if ( cert_ )
+                {
+                if ( X509_check_ca( cert_) )
+                    return preverified ;
+                X509_NAME * pName = X509_get_subject_name(cert_ ) ;
+                BaseCertificate xCert(cert_) ;
+                std::stringstream sName ;
+                static int serial=0 ;
+                sName << "/tmp/cert" << serial++ ;
+                xCert.SavePEM(sName.str()) ;
+                if ( pName )
+                    {
+                    char * cSubject = X509_NAME_oneline(pName, NULL, 0) ;
+                    sSubject = std::string(cSubject) ;
+                    std::cerr << "\n##" << sSubject << " " << (unsigned long int) this << 
+                          " cert " << (unsigned long int) cert_ << "\n" ;
+                    free(cSubject) ;
+                    }
+                }
+            }
+        return preverified ;
+      }
+
+
 /// Construct new snapshot server. This is the control component of the server gui
 /// The view is the html/jquery component
 SnapshotServer::SnapshotServer(int argc, char** argv, SnapshotConfig  * pConfig)
@@ -194,6 +226,47 @@ void SnapshotServer::log(std::shared_ptr<HttpServer::Response> const &response, 
     std::cerr << ctime(&now) << " " << "Response error " << e.message() << "\n" ;
     }
 
+
+void SnapshotServer::log(std::shared_ptr<HttpsServer::Request> const &request)
+    {
+    
+    time_t now = time(NULL) ;
+    std::cerr << ctime(&now) << " S:" << request -> get_owner() << ": " << "Request " << request->method << ": " << request->path 
+            << " q=" <<request->query_string << "\n" ;
+    for ( auto i= request->header.begin() ; i != request->header.end(); i++)
+        {
+        std::cerr << "    " << i->first << ": " << i->second << "\n";
+        }
+    std::cerr << "    \n";
+    
+    
+    /* char buf[257] ;
+    buf[0] = 0;
+    request -> content.read(buf, 256);
+    buf[request->content.gcount()] = 0;
+    buf[256] = 0;
+    std::cerr << ".." << buf  << "XX\n\n"; */
+    }
+
+void SnapshotServer::log(std::shared_ptr<HttpsServer::Request> const &request, SimpleWeb::error_code const &e)
+    {
+    time_t now = time(NULL) ;
+    std::cerr << ctime(&now) << " S:" << request -> get_owner() << " " << "Request " << request->method << " ERROR " << e.message() << ": " << request->path << "\n" ;
+    }
+
+void SnapshotServer::log(std::shared_ptr<HttpsServer::Response> const &response)
+    {
+    time_t now = time(NULL) ;
+    std::cerr << ctime(&now) << " S:" << response -> get_owner() << " " << "Response \n" ;
+    }
+
+void SnapshotServer::log(std::shared_ptr<HttpsServer::Response> const &response, SimpleWeb::error_code const &e)
+    {
+    time_t now = time(NULL) ;
+    std::cerr << ctime(&now) << " S:" << response -> get_owner() << " " << "Response error " << e.message() << "\n" ;
+    }
+
+
 void SnapshotServer::log(const std::exception &e) 
     {
     time_t now = time(NULL) ;
@@ -296,5 +369,105 @@ void SnapshotServer::receive_and_write(const std::shared_ptr<HttpServer::Request
             }
         }
     }
+
+/* ## */
+
+std::string SnapshotServer::Control(std::shared_ptr<HttpsServer::Request> &request) 
+    {
+    boost::property_tree::ptree pt;
+    auto xContentType = request -> header.find("Content-Type") ;
+    std::string sContentType("application/octet-stream") ;
+
+    if (xContentType != request->header.end())
+        sContentType = xContentType -> second ;
+
+    std::cerr << "JSON:: ContentType:" << sContentType << "\n" ;
+
+    if(sContentType == "application/json")
+        read_json(request->content, pt);
+    else
+        throw std::invalid_argument("no valid json");
+
+
+    boost::property_tree::ptree res = Action(pt);
+    
+    std::ostringstream xRet;
+    write_json(xRet, res);
+    std::cerr << "JSON:: return" << xRet.str() << "\n" ;
+    return xRet.str();
+    
+    } // ends Control
+
+std::string SnapshotServer::Uploadpath(std::shared_ptr<HttpsServer::Request> &request) 
+    {
+    auto querypar = request -> parse_query_string() ;
+    auto fhandle = querypar.find("filehandle") ;
+    
+    std::string ret("/tmp/serverfile");
+    
+    return ret ;
+    }
+
+std::string SnapshotServer::Downloadpath(std::shared_ptr<HttpsServer::Request> &request) 
+    {
+    auto querypar = request -> parse_query_string() ;
+    auto fhandle = querypar.find("filehandle") ;
+    
+    std::string ret("/tmp/serverfile");
+    
+    return ret ;
+    }
+
+void SnapshotServer::read_and_send(const std::shared_ptr<HttpsServer::Response> &response, 
+                                   const std::shared_ptr<std::ifstream> &ifs)
+    {
+    // Read and send 128 KB at a time
+    static std::vector<char> buffer(131072); // Safe when server is running on one thread
+    std::streamsize read_length;
+    if ((read_length = ifs->read(&buffer[0], static_cast<std::streamsize> (buffer.size())).gcount()) > 0)
+        {
+        response->write(&buffer[0], read_length);
+        if (read_length == static_cast<std::streamsize> (buffer.size()))
+            {
+            response->send([response, ifs](const SimpleWeb::error_code & ec)
+                {
+                if (!ec)
+                    read_and_send(response, ifs);
+                else
+                    std::cerr << "Connection interrupted" << std::endl;
+                });
+            }
+        }
+    }
+
+void SnapshotServer::receive_and_write(const std::shared_ptr<HttpsServer::Request> &request,
+                                       const std::shared_ptr<std::ofstream> &ofs)
+    {
+    // Read and send 128 KB at a time
+    static std::vector<char> buffer(131072); // Safe when server is running on one thread
+    std::streamsize read_length;
+
+    while(true)
+        {
+        read_length = request->content.read(&buffer[0], static_cast<std::streamsize> (buffer.size())).gcount();
+        if(read_length<=0)
+            break ;
+        ofs->write(&buffer[0], static_cast<std::streamsize> (read_length));
+        
+        if ( *ofs )
+            {
+            if (read_length == static_cast<std::streamsize> (buffer.size()))
+                {
+                receive_and_write(request, ofs);
+                }
+            break;
+            }
+        else
+            {
+            std::cerr << "receive_and_write fail \n" ;
+            }
+        }
+    }
+
 
 

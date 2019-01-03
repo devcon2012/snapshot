@@ -7,7 +7,7 @@
  */
 
 #include "ToolBody.hpp"
-#include "../server/http/client_http.hpp"
+#include "../http/client_http.hpp"
 #include "../common/StrUtil.hpp"
 #include "SnapshotCmds.hpp"
 

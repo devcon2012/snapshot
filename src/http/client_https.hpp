@@ -16,8 +16,11 @@ namespace SimpleWeb {
   class Client<HTTPS> : public ClientBase<HTTPS> {
   public:
     Client(const std::string &server_port_path, bool verify_certificate = true, const std::string &cert_file = std::string(),
-           const std::string &private_key_file = std::string(), const std::string &verify_file = std::string())
+           const std::string &private_key_file = std::string(), const std::string &verify_file = std::string(),
+           std::string(*password_callback)(std::size_t s, boost::asio::ssl::context::password_purpose p) = NULL)
         : ClientBase<HTTPS>::ClientBase(server_port_path, 443), context(asio::ssl::context::tlsv12) {
+      if(password_callback)
+          context.set_password_callback(password_callback);
       if(cert_file.size() > 0 && private_key_file.size() > 0) {
         context.use_certificate_chain_file(cert_file);
         context.use_private_key_file(private_key_file, asio::ssl::context::pem);
@@ -37,6 +40,8 @@ namespace SimpleWeb {
         context.set_verify_mode(asio::ssl::verify_none);
     }
 
+    void set_password_callback(std::string(*password_callback)(std::size_t s, boost::asio::ssl::context::password_purpose p)) 
+        {context.set_password_callback(password_callback); }
   protected:
     asio::ssl::context context;
 

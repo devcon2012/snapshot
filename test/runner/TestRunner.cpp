@@ -31,11 +31,9 @@ int main_initializer(int argc, char **argv);
 int main(int argc, char **argv)
     {
   
-
     main_initializer(argc, argv);    
     TestSelektor *pTestSelector = GetTestSelektor();
 
-  
     // Create the event manager and test controller
     CPPUNIT_NS::TestResult controller;
 

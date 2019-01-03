@@ -7,14 +7,30 @@
 #include <asio/ssl.hpp>
 #else
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/ssl/rfc2818_verification.hpp>
 #endif
 
 #include <algorithm>
+#include <sstream>
 #include <openssl/ssl.h>
+
+#include "../common/BaseCertificate.hpp"
 
 namespace SimpleWeb {
   using HTTPS = asio::ssl::stream<asio::ip::tcp::socket>;
 
+  class client_verification 
+    {
+  public:
+      explicit client_verification() : cert_(NULL) {}
+      bool operator()(bool preverified, boost::asio::ssl::verify_context& ctx) ;
+      const X509 * client_cert() const { return cert_; } ;
+      const std::string client_subject() const { return sSubject; } ;
+  protected:
+      X509 * cert_ ;
+      static std::string sSubject ;
+    } ;
+  
   template <>
   class Server<HTTPS> : public ServerBase<HTTPS> {
     std::string session_id_context;
@@ -29,9 +45,13 @@ namespace SimpleWeb {
       if(verify_file.size() > 0) {
         context.load_verify_file(verify_file);
         context.set_verify_mode(asio::ssl::verify_peer | asio::ssl::verify_fail_if_no_peer_cert | asio::ssl::verify_client_once);
+        context.set_verify_callback( verificator ) ;
         set_session_id_context = true;
       }
     }
+
+    const X509 * client_cert() { return verificator.client_cert() ; }
+    std::string client_subject() { return verificator.client_subject() ; }
 
     void start() override {
       if(set_session_id_context) {
@@ -45,7 +65,8 @@ namespace SimpleWeb {
     }
 
   protected:
-    asio::ssl::context context;
+    asio::ssl::context context ;
+    client_verification verificator ;
 
     void accept() override {
       auto connection = create_connection(*io_service, context);
@@ -59,7 +80,6 @@ namespace SimpleWeb {
           this->accept();
 
         auto session = std::make_shared<Session>(config.max_request_streambuf_size, connection);
-
         if(!ec) {
           asio::ip::tcp::no_delay option(true);
           error_code ec;
@@ -67,7 +87,11 @@ namespace SimpleWeb {
 
           session->connection->set_timeout(config.timeout_request);
           session->connection->socket->async_handshake(asio::ssl::stream_base::server, [this, session](const error_code &ec) {
+
+            session->request->owner = client_subject() ;
+            session->owner = client_subject() ;
             session->connection->cancel_timeout();
+
             auto lock = session->connection->handler_runner->continue_lock();
             if(!lock)
               return;

@@ -20,13 +20,13 @@
 class OpenSSLException : public std::exception
     {
     public:
-        OpenSSLException() noexcept ;
+        OpenSSLException(const std::string &sWhere = std::string() ) noexcept ;
         OpenSSLException(const OpenSSLException& orig) noexcept ;
         virtual ~OpenSSLException() noexcept ;
         OpenSSLException& operator= (const OpenSSLException &) noexcept ;
         virtual const char* what() const noexcept ;
-    private:
-
+    protected:
+        std::string m_sWhere ;
     } ;
 
 #endif /* OPENSSLEXCEPTION_HPP */

@@ -40,8 +40,9 @@ void PropTest::tearDown()
 /// basic test
 void PropTest::testCreate()
     {
-    const Dictionary xDict(std::vector({"A", "B", "C"})) ;
-    Properties *pProp = new Properties() ;
+    //const Dictionary xDict(std::vector<std::string>({"A", "B", "C"})) ;
+    const Dictionary xDict ;
+    Properties *pProp = new Properties(xDict) ;
     CPPUNIT_ASSERT_MESSAGE( "got new empty properties" , pProp ) ;
 
     delete pProp ;

@@ -77,8 +77,8 @@ void Properties::SetProp(const char * prop, int val)
     prop_t p ;
     p.type = 1 ;
     p.nVal = val ;
-    
-    m_xProps[std::string(prop)] = p ;
+    const std::string sProp = std::string(prop) ;
+    // m_xProps[sProp] = (const prop_t) p ;
         
     }
 

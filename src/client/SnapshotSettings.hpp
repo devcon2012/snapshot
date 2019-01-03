@@ -16,12 +16,20 @@
 
 #include "wxClient.h"
 
-class SnapshotSettings : public SettingsDialog 
+/// defined config settings keys
+
+#define CFG_SERVER_URL      "ServerURL"
+#define CFG_SERVER_CA       "ServerCA"
+#define CFG_CLIENT_CERT     "ClientCertificate"
+#define CFG_CLIENT_KEY      "ClientKey"
+#define CFG_SYNCED_DIRS     "SyncedDirs"
+    
+class SettingsDialog : public mySettingsDialog 
 {
 public:
-    SnapshotSettings(wxWindow* parent) ; 
+    SettingsDialog(wxWindow* parent) ; 
 
-    virtual ~SnapshotSettings();
+    virtual ~SettingsDialog();
 
 private:
     virtual void OnExit(wxCommandEvent &e) ;    
@@ -31,10 +39,22 @@ private:
     virtual void UpdateSettings( wxCommandEvent& event ) ;
     virtual void CancelSettings( wxCommandEvent& event ) ;
 
+    virtual void SelectCA( wxFileDirPickerEvent& event ) ;
+    virtual void SelectCertificate( wxFileDirPickerEvent& event ) ;
+    virtual void SelectKey( wxFileDirPickerEvent& event ) ;
+
+    std::string toString( const wxTextCtrl & t) ;
     wxDECLARE_EVENT_TABLE();
 
 };
 
+class KeyPasswdDialog : public myKeyPasswdDialog
+    {
+    public:
+        KeyPasswdDialog( wxWindow* parent ) ;
+        ~KeyPasswdDialog();
+        std::string GetPasswd() ;
+    } ;
 
 
 #endif /* SNAPSHOTSETTINGS_HPP */

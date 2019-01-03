@@ -12,14 +12,16 @@
  */
 
 #include <wx/wx.h>
+#include "SnapshotClient.hpp"
 #include "SnapshotView.hpp"
 #include "SnapshotSettings.hpp"
 
 wxBEGIN_EVENT_TABLE(SnapshotView, wxFrame)
     EVT_MENU(wxID_EXIT,  SnapshotView::OnExit)
+    EVT_STATE_UPDATE_EVENT(wxID_ANY, SnapshotView::OnUpdateServerState)
 wxEND_EVENT_TABLE()
 
-SnapshotView::SnapshotView(int argc, char** argv ) : myMainFrame(NULL)
+SnapshotView::SnapshotView(wxWindow* parent, int argc, char** argv ) : myMainFrame(parent)
     {
     
     }
@@ -34,7 +36,12 @@ SnapshotView::~SnapshotView()
 
 void SnapshotView::UpdateStatus(const char * sStatus) 
     {
-    m_statusBar1 ->SetStatusText(wxString(sStatus)) ;
+    UpdateStatus(wxString(sStatus)) ;
+    }
+
+void SnapshotView::UpdateStatus(const wxString & sStatus) 
+    {
+    m_statusBar1 ->SetStatusText(sStatus) ;
     }
 
 bool SnapshotView::OnInit()
@@ -50,7 +57,7 @@ void SnapshotView::OnExit(wxCommandEvent &e)
 
 void SnapshotView::OnMenuSettings( wxCommandEvent& event ) 
     {
-    SnapshotSettings * pSettings = new SnapshotSettings(this);
+    SettingsDialog * pSettings = new SettingsDialog(this);
     pSettings -> ShowModal() ;
     }
 
@@ -59,7 +66,22 @@ void SnapshotView::OnMenuQuit( wxCommandEvent& event )
     OnExit(event) ;
     }
 
+void SnapshotView::OnUpdateServerState( wxCommandEvent& event ) 
+    {
+    wxStringClientData * clientObject = dynamic_cast<wxStringClientData *>(event.GetClientObject()) ;
+    if (clientObject)
+        {
+        UpdateStatus(clientObject -> GetData()) ;  
+        delete clientObject ;
+        }
+    }
+
+
 void SnapshotView::OnConnectServer( wxCommandEvent& event ) 
     {
     UpdateStatus("Connecting...") ;
+
+    wxCommandEvent eventDo(wxEVT_DO_EVENT);
+
+    wxPostEvent(SnapshotClient::GetDefault(), eventDo);
     }

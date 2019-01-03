@@ -31,7 +31,6 @@ add_executable(SnapshotServer ${SERVERSOURCES} ${SERVERHEADERS} )
 
 target_link_libraries(SnapshotServer ${MODULE_NAME} SnapshotLibrary 
                         ${KYOTOCABINET_LIBRARIES}
-                        boost_filesystem boost_system 
+                        boost_filesystem boost_system crypto ssl
                         pthread ) 
    
-add_subdirectory(http)

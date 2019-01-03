@@ -26,6 +26,12 @@ BaseCertificate::BaseCertificate()
     Init() ;
     }
 
+BaseCertificate::BaseCertificate(X509 * pX509)
+    {
+    Init() ;
+    m_pX509 = pX509 ;
+    }
+
 BaseCertificate::BaseCertificate(const BaseCertificate& orig)
     {
     Init() ;

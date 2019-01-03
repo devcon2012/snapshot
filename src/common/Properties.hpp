@@ -32,9 +32,9 @@ class Dictionary
 class Properties 
     {
     public:
-        Properties(const Dictionary &);
-        Properties(const Properties& orig);
-        virtual ~Properties();
+        Properties(const Dictionary & dict) ;
+        Properties(const Properties & orig) ;
+        virtual ~Properties() ;
         int GetIntProp(const char *Prop) const ;
         double GetFloatProp(const char *Prop) const ;
         const std::string & GetStringProp(const char *Prop) const ;
@@ -50,9 +50,9 @@ class Properties
             prop_t() {type = 0 ; }
             prop_t(const prop_t &p) 
                 { type = p.type;
-                if( p.type==1 ) nval = p.nval ;
-                if( p.type==2 ) fval = p.fval ;
-                if( p.type==3 ) sval = p.sval ;
+                if( p.type==1 ) nVal = p.nVal ;
+                if( p.type==2 ) fVal = p.fVal ;
+                if( p.type==3 ) sVal = p.sVal ;
                 }
             ~prop_t() {} ;
             int type ;

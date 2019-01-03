@@ -49,11 +49,12 @@ public:
     
     static std::string str2json(const char ** str, int n) ;
     static boost::property_tree::ptree pt_from_json(std::string const &sJSON) ;
+    static boost::property_tree::ptree pt_from_json_file(std::string const &sJSONFile) ;
     static boost::property_tree::ptree pt_from_json(std::basic_streambuf<char>* sJSON) ;
     static std::string json_from_pt(boost::property_tree::ptree const &pt)  ;
  
-    static void dump_pt(std::ostream &out, boost::property_tree::ptree &pt);
-    static void dump_pt(boost::property_tree::ptree &pt);
+    static void dump_pt(std::ostream &out, const boost::property_tree::ptree &pt);
+    static void dump_pt(const boost::property_tree::ptree &pt);
 
 private:
 

@@ -10,7 +10,8 @@
 #include "../common/SnapshotConfig.hpp"
 #include "../common/SnapshotLog.hpp"
 
-#include "http/server_http.hpp"
+#include "../http/server_http.hpp"
+#include "../http/server_https.hpp"
 
 // Added for the json-example
 #define BOOST_SPIRIT_THREADSAFE
@@ -24,7 +25,7 @@
 
 // Added for the default_resource example
 #include <vector>
-#include "http/crypto.hpp"
+#include "../http/crypto.hpp"
 
 using namespace std;
 using namespace boost::property_tree;
@@ -59,13 +60,23 @@ static void handle_shutdown (int signr)
     }
 #endif
 
+std::string SimpleWeb::client_verification::sSubject ;
+        
+HttpsServer * pHttpServer = NULL ;
+
 int main(int argc, char **argv)
     {
     // HTTP-server at port 8080 using 1 thread
     // Unless you do more heavy non-threaded processing in the resources,
     // 1 thread is usually faster than several threads
-    HttpServer server;
-
+    std::string cert_file       = "/home/klaus/src/owngit/snapshot/cert/Test_Server.crt" ;
+    std::string key_file        = "/home/klaus/src/owngit/snapshot/cert/Serverkey.pem" ;
+    std::string verify_file     = "/home/klaus/src/owngit/snapshot/cert/Test_CA.crt" ;
+    
+    HttpsServer server(cert_file, key_file, verify_file) ;
+    
+    pHttpServer = &server ;
+    
 #ifdef __linux__
     install_handler(SIGINT, handle_shutdown) ;
 #endif
@@ -117,9 +128,10 @@ int main(int argc, char **argv)
     pDefaultServer = pServer ;
 
     // JSON Posts: Query snapshots etc
-    server.resource["^/json$"]["POST"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request)
+    server.resource["^/json$"]["POST"] = [](shared_ptr<HttpsServer::Response> response, shared_ptr<HttpsServer::Request> request)
         {
         pDefaultServer -> log(request);
+
         try
             {
 
@@ -133,14 +145,14 @@ int main(int argc, char **argv)
             }
         catch (const exception &e)
             {
-            pDefaultServer -> log(e);
-            response->write(SimpleWeb::StatusCode::client_error_bad_request, e.what());
+            pDefaultServer -> log(e) ;
+            response->write(SimpleWeb::StatusCode::client_error_bad_request, e.what()) ;
             }
-        pDefaultServer -> log(response);
+        pDefaultServer -> log(response) ;
         };
         
     // uploads
-    server.resource["^/ul$"]["POST"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request)
+    server.resource["^/ul$"]["POST"] = [](shared_ptr<HttpsServer::Response> response, shared_ptr<HttpsServer::Request> request)
         {
         pDefaultServer -> log(request);
         try
@@ -182,7 +194,7 @@ int main(int argc, char **argv)
         };
         
     // downloads
-    server.resource["^/dl$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request)
+    server.resource["^/dl$"]["GET"] = [](shared_ptr<HttpsServer::Response> response, shared_ptr<HttpsServer::Request> request)
         {
         pDefaultServer -> log(request);
         try
@@ -225,7 +237,7 @@ int main(int argc, char **argv)
     // Will respond with content in the web/-directory, and its subdirectories.
     // Default file: index.html
     // Can for instance be used to retrieve an HTML 5 client that uses REST-resources on this server
-    server.default_resource["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request)
+    server.default_resource["GET"] = [](shared_ptr<HttpsServer::Response> response, shared_ptr<HttpsServer::Request> request)
         {
         pDefaultServer -> log(request);
         auto server_root_path = boost::filesystem::path( pConfig -> GetString("ServerRoot") ) ;
@@ -266,7 +278,7 @@ int main(int argc, char **argv)
         pDefaultServer -> log(response);
         };
 
-    server.on_error = [](shared_ptr<HttpServer::Request> request, const SimpleWeb::error_code & ec)
+    server.on_error = [](shared_ptr<HttpsServer::Request> request, const SimpleWeb::error_code & ec)
         {
         pDefaultServer -> log(request, ec);
         };

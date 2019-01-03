@@ -154,7 +154,16 @@ boost::property_tree::ptree StrUtil::pt_from_json(std::string const &sJSON)
     
     boost::property_tree::read_json(sOut, xRet);
     return xRet ;
+    }
+boost::property_tree::ptree StrUtil::pt_from_json_file(std::string const &sJSONFile) 
+    {
+    std::fstream sIn;
+    sIn.open(sJSONFile, std::ios_base::in);
+    boost::property_tree::ptree xRet;
     
+    boost::property_tree::read_json(sIn, xRet);
+    sIn.close() ;
+    return xRet ;
     }
 boost::property_tree::ptree StrUtil::pt_from_json(std::basic_streambuf<char>* sJSON) 
     {
@@ -196,12 +205,12 @@ std::string StrUtil::str2json(const char ** str, int n)
     return sJSON.str();
     }
 
-void StrUtil::dump_pt(std::ostream &out, boost::property_tree::ptree &pt)
+void StrUtil::dump_pt(std::ostream &out, const boost::property_tree::ptree &pt)
     {
     out << json_from_pt(pt) ;
     }
 
-void StrUtil::dump_pt(boost::property_tree::ptree &pt)
+void StrUtil::dump_pt(const boost::property_tree::ptree &pt)
     {
     dump_pt(std::cout, pt);
     }

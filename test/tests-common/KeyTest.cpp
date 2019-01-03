@@ -50,6 +50,8 @@ void KeyTest::testCreate()
 
     pKey -> NewRSA(512) ;
     CPPUNIT_ASSERT_MESSAGE( "created new rsa key" , pKey->hasPrivKey() ) ;
+    
+    pKey -> SavePEM("/tmp/sav.pem") ;
 
     delete pKey ;
     

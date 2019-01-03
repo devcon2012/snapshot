@@ -28,6 +28,7 @@ class BaseCertificate
     {
     public:
         BaseCertificate();
+        BaseCertificate(X509 *);
         BaseCertificate(const BaseCertificate& orig);
         virtual ~BaseCertificate();
 

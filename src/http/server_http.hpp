@@ -58,11 +58,15 @@ namespace SimpleWeb {
       friend class Server<socket_type>;
 
       asio::streambuf streambuf;
+      std::string owner ;
 
       std::shared_ptr<Session> session;
       long timeout_content;
 
-      Response(std::shared_ptr<Session> session, long timeout_content) noexcept : std::ostream(&streambuf), session(std::move(session)), timeout_content(timeout_content) {}
+      Response(std::shared_ptr<Session> session, long timeout_content) noexcept : std::ostream(&streambuf), session(std::move(session)), timeout_content(timeout_content) 
+        {
+         // owner = session->owner ;
+        }
 
       template <typename size_type>
       void write_header(const CaseInsensitiveMultimap &header, size_type size) {
@@ -83,6 +87,7 @@ namespace SimpleWeb {
       }
 
     public:
+      std::string get_owner() { return session -> owner ; } 
       std::size_t size() noexcept {
         return streambuf.size();
       }
@@ -188,10 +193,13 @@ namespace SimpleWeb {
 
       asio::streambuf streambuf;
 
+      std::string owner ;
+
       Request(std::size_t max_request_streambuf_size, std::shared_ptr<asio::ip::tcp::endpoint> remote_endpoint) noexcept
           : streambuf(max_request_streambuf_size), content(streambuf), remote_endpoint(std::move(remote_endpoint)) {}
 
     public:
+      std::string get_owner() { return owner ; } 
       std::string method, path, query_string, http_version;
 
       Content content;
@@ -232,7 +240,11 @@ namespace SimpleWeb {
     class Connection : public std::enable_shared_from_this<Connection> {
     public:
       template <typename... Args>
-      Connection(std::shared_ptr<ScopeRunner> handler_runner, Args &&... args) noexcept : handler_runner(std::move(handler_runner)), socket(new socket_type(std::forward<Args>(args)...)) {}
+      Connection(std::shared_ptr<ScopeRunner> handler_runner, Args &&... args) noexcept : handler_runner(std::move(handler_runner)), socket(new socket_type(std::forward<Args>(args)...)) 
+        {          
+          static int serial = 0 ;
+          std::cerr << "Connection: " << serial++ << ": " << (unsigned long int) this << "\n" ;
+        }
 
       std::shared_ptr<ScopeRunner> handler_runner;
 
@@ -278,13 +290,15 @@ namespace SimpleWeb {
     class Session {
     public:
       Session(std::size_t max_request_streambuf_size, std::shared_ptr<Connection> connection) noexcept : connection(std::move(connection)) {
+          static int serial = 0 ;
+          std::cerr << "Session: " << serial++ << ": " << (unsigned long int) this << "\n" ;
         if(!this->connection->remote_endpoint) {
           error_code ec;
           this->connection->remote_endpoint = std::make_shared<asio::ip::tcp::endpoint>(this->connection->socket->lowest_layer().remote_endpoint(ec));
         }
         request = std::shared_ptr<Request>(new Request(max_request_streambuf_size, this->connection->remote_endpoint));
       }
-
+      std::string owner ;
       std::shared_ptr<Connection> connection;
       std::shared_ptr<Request> request;
     };

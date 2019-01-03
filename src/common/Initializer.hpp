@@ -23,6 +23,7 @@ protected:
     virtual ~Initializer();
     static Initializer * m_pInitializer ;
     void OpenSSLInitializer() ;
+    void I18NInitializer() ;
 };
 
 #endif /* INITIALIZER_HPP */

@@ -36,7 +36,7 @@ FILE(GLOB TOOLHEADERS Tool*.hpp)
 message(STATUS "Client sources/headers: " ${CLIENTSOURCES} ${CLIENTHEADERS} ${wxWidgets_CXX_FLAGS} )
 source_group("Includes" REGULAR_EXPRESSION \\.hpp )
 
-FILE(GLOB CLIENTLIBSOURCES Snapshot*.cpp Notificator.cpp)
+FILE(GLOB CLIENTLIBSOURCES Snapshot*.cpp Notificator.cpp Connector*.cpp )
 message(STATUS "Clientlib: " ${CLIENTLIBSOURCES} )
 
 set(MODULE_NAME "SnapshotClientLibrary")
@@ -46,7 +46,7 @@ add_library(${MODULE_NAME} STATIC ${CLIENTLIBSOURCES})
 
 add_executable(SnapshotClient ${CLIENTSOURCES} ${CLIENTHEADERS} )
 
-target_link_libraries(SnapshotClient ${MODULE_NAME} SnapshotLibrary boost_filesystem boost_system ${wxWidgets_LIBRARIES}) 
+target_link_libraries(SnapshotClient ${MODULE_NAME} SnapshotLibrary boost_filesystem boost_system ${wxWidgets_LIBRARIES} crypto ssl) 
    
 add_executable(SnapshotTool ${TOOLSOURCES} ${TOOLHEADERS} )
 

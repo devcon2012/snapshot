@@ -25,8 +25,11 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/filesystem.hpp>
 
-#include "http/server_http.hpp"
+#include "../http/server_http.hpp"
+#include "../http/server_https.hpp"
+
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
+using HttpsServer = SimpleWeb::Server<SimpleWeb::HTTPS>;
 
 class SnapshotServerModel ;
 class SnapshotConfig ;
@@ -46,6 +49,15 @@ public:
     /// Uploadpath - return path to save an upload
     std::string Uploadpath(std::shared_ptr<HttpServer::Request> &request) ;
 
+    /// Control - query snapshots, prepare UL/DL
+    std::string Control(std::shared_ptr<HttpsServer::Request> &request) ;
+
+    /// Downloadpath - return path of a saved file
+    std::string Downloadpath(std::shared_ptr<HttpsServer::Request> &request) ;
+
+    /// Uploadpath - return path to save an upload
+    std::string Uploadpath(std::shared_ptr<HttpsServer::Request> &request) ;
+
     boost::property_tree::ptree Action(boost::property_tree::ptree &pt) ;
     boost::property_tree::ptree Enumerate(boost::property_tree::ptree &pt) ;
     boost::property_tree::ptree Getter(boost::property_tree::ptree &pt) ;
@@ -58,6 +70,10 @@ public:
     void log(std::shared_ptr<HttpServer::Request> const &request) ;
     void log(std::shared_ptr<HttpServer::Response> const &response) ;
     void log(std::shared_ptr<HttpServer::Response> const &response, SimpleWeb::error_code const &e) ; 
+    void log(std::shared_ptr<HttpsServer::Request> const &request, SimpleWeb::error_code const &e) ;
+    void log(std::shared_ptr<HttpsServer::Request> const &request) ;
+    void log(std::shared_ptr<HttpsServer::Response> const &response) ;
+    void log(std::shared_ptr<HttpsServer::Response> const &response, SimpleWeb::error_code const &e) ; 
     void log(const std::exception &e) ;
 
     /// map file extensions to mime type (utility function)
@@ -66,6 +82,11 @@ public:
     static void read_and_send    (const std::shared_ptr<HttpServer::Response> &response,
                                     const std::shared_ptr<std::ifstream> &ifs) ;
     static void receive_and_write(const std::shared_ptr<HttpServer::Request> &request,
+                                    const std::shared_ptr<std::ofstream> &ifs) ;
+
+    static void read_and_send    (const std::shared_ptr<HttpsServer::Response> &response,
+                                    const std::shared_ptr<std::ifstream> &ifs) ;
+    static void receive_and_write(const std::shared_ptr<HttpsServer::Request> &request,
                                     const std::shared_ptr<std::ofstream> &ifs) ;
 
 private:

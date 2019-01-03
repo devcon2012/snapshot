@@ -20,6 +20,8 @@
 #include "Initializer.hpp"
 #include "OpenSSLException.hpp"
 
+#include "I18N.hpp"
+
 Initializer * Initializer::m_pInitializer = NULL ;
 
 Initializer * Initializer::GetInitializer() 
@@ -52,4 +54,15 @@ void Initializer::OpenSSLInitializer()
     if ( RAND_load_file(rndfn, 100) < 0 )
         throw OpenSSLException() ;
     
+    }
+
+void Initializer::I18NInitializer() 
+    {
+    char* pPath = getenv ("HOME");
+    std::string sRoot ;
+    
+    if ( pPath!=NULL )
+        sRoot = std::string(pPath) + "/.snapshot" ;
+    
+    I18NCollector::GetI18NCollector( sRoot ) ;
     }
